@@ -1,0 +1,7 @@
+Sudah:
+Install NextJS dan Typescript
+Susun struktur folder di /scr
+npm i next @types/next --save // belum
+
+Belum:
+buat frontend
