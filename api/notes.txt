@@ -10,6 +10,29 @@ buat database (mini_project)
 npm i @prisma/client
 
 
+-----------------------------------------------------------------------------------
+
+install bcryptjs = npm i bcrypt
+
+install dotenv-cli untuk membaca file .env lokal = npm i dotenv-cli
+
+tambahkan "scripts": {
+    "dev": "nodemon --files src/index.ts",
+    "prisma:migrate": "dotenv -e .env.local -- npx prisma migrate dev"
+}
+
+migrate schema prisma = npm run prisma:migrate
+
+jangan lupa npm run dev untuk menjalankan server
+
+install jwt = npm i jsonwebtoken
+
+npm i --save-dev @types/jsonwebtoken
+
+tambahkan "include": ["**/*.ts] di line 108 tsconfig.json, setelah compilerOptions => untuk membuat middleware bisa diakses
+
+-----------------------------------------------------------------------------------
+
 BELUM:
 
 prisma migrate dev
