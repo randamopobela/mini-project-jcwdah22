@@ -8,6 +8,7 @@ npm i --save prisma
 npx prisma init
 buat database (mini_project)
 npm i @prisma/client
+npm i cors
 
 
 -----------------------------------------------------------------------------------
@@ -29,7 +30,7 @@ install jwt = npm i jsonwebtoken
 
 npm i --save-dev @types/jsonwebtoken
 
-tambahkan "include": ["**/*.ts] di line 108 tsconfig.json, setelah compilerOptions => untuk membuat middleware bisa diakses
+tambahkan "include": ["**/*.ts"] di line 108 tsconfig.json, setelah compilerOptions => untuk membuat middleware bisa diakses
 
 -----------------------------------------------------------------------------------
 
