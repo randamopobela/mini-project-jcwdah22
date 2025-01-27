@@ -1,6 +1,6 @@
 // Interface untuk UserRegister
 export interface UserRegister {
-    id: number;
+    id: string;
     email: string;
     password: string;
     first_name: string;
@@ -15,7 +15,7 @@ export interface UserRegister {
 
 // interface untuk UserLogin
 export interface UserLogin {
-    id: number;
+    id: string;
     email: string;
     password?: string;
     role: string;

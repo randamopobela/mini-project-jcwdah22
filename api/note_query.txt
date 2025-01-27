@@ -1,0 +1,18 @@
+
+Register: localhost:8000/api/auth/register
+{
+    "email": "aldi@mail.com",
+    "password": "abc123",
+    "firstName": "Aldi",
+    "lastName": "Maulana",
+    "role": "ORGANIZER",
+    "referredBy": "A5XKG1"
+}
+
+Login: localhost:8000/api/auth/login
+{
+    belum jadi
+}
+
+Search User: localhost:8000/api/search/cari-data
+
