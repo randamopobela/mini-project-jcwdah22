@@ -7,7 +7,7 @@ class eventService {
     async new(req: Request, res: Response, next: NextFunction) {
         try {
             const {
-                name,
+                title,
                 description,
                 eventPicture,
                 category,
@@ -26,7 +26,7 @@ class eventService {
             if (organizer) {
                 await prisma.event.create({
                     data: {
-                        name,
+                        title,
                         description,
                         category,
                         eventPicture: eventPicture ?? null,

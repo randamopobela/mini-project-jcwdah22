@@ -30,7 +30,7 @@ class searchService {
             return await prisma.event.findMany({
                 select: {
                     id: true,
-                    name: true,
+                    title: true,
                     description: true,
                     category: true,
                     eventPicture: true,
