@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { prisma } from "../config";
 
 class searchService {
-    async searchData(req: Request, res: Response, next: NextFunction) {
+    async user(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, firstName, lastName } = req.body;
+            // const { email, firstName, lastName } = req.body;
 
             return await prisma.user.findMany({
                 select: {
@@ -20,13 +20,33 @@ class searchService {
                     pointsExpiration: true,
                     isActive: true,
                 },
-                // where: {
-                //     OR: [
-                //         { email: { contains: email } },
-                //         { firstName: { contains: firstName } },
-                //         { lastName: { contains: lastName } },
-                //     ],
-                // },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+    async event(req: Request, res: Response, next: NextFunction) {
+        try {
+            return await prisma.event.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    category: true,
+                    eventPicture: true,
+                    location: true,
+                    startDate: true,
+                    endDate: true,
+                    price: true,
+                    availableSeats: true,
+                    totalSeats: true,
+                    organizer: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                        },
+                    },
+                },
             });
         } catch (error) {
             next(error);

@@ -21,7 +21,7 @@ class AuthController {
         }
     }
 
-    async logout(req: Request, res: Response, next: NextFunction) {}
+    // async logout(req: Request, res: Response, next: NextFunction) {}
 }
 
 export default new AuthController();

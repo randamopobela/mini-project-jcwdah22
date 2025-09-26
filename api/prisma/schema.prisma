@@ -18,9 +18,9 @@ model User {
     email             String    @unique
     password          String
     firstName         String    @map("first_name")
-    lastName          String    @map("last_name")
+    lastName          String?   @map("last_name")
     profilePicture    String?   @map("profile_picture")
-    role              Role
+    role              UserRole
     referralCode      String    @map("referral_code") @unique
     referredBy        String?   @map("referred_by")
     points            Int       @default(0)
@@ -41,16 +41,17 @@ model User {
     @@map("users")
 }
 
-enum Role {
+enum UserRole {
     CUSTOMER
     ORGANIZER
 }
 
 model Event {
     id                Int       @id @default(autoincrement())
-    name              String
+    title             String    @unique
     description       String
-    category          String
+    category          EventCategory
+    eventPicture      String?   @map("event_picture")
     location          String
     startDate         DateTime  @map("start_date")
     endDate           DateTime  @map("end_date")
@@ -59,14 +60,36 @@ model Event {
     totalSeats        Int       @map("total_seats")
     organizerId       String    @map("organizer_id")
     organizer         User      @relation("OrganizerEvents", fields: [organizerId], references: [id])
+    status            EventStatus @default(DRAFT)
+    createdAt         DateTime  @map("created_at") @default(now())
+    updatedAt         DateTime  @map("updated_at") @updatedAt
+
     transactions      Transaction[]
     tickets           Tickets[]
     vouchers          Voucher[]
     reviews           Review[]
-    createdAt         DateTime  @map("created_at") @default(now())
-    updatedAt         DateTime  @map("updated_at") @updatedAt
 
     @@map("events")
+}
+
+enum EventCategory {
+    Education
+    Entertainment
+    Social
+    Community
+    Sports
+    Health
+    Wedding
+    Family
+    Religious
+    Government
+    Public
+}
+
+enum EventStatus {
+    DRAFT
+    PUBLISHED
+    CANCELED
 }
 
 model Transaction {
@@ -80,9 +103,10 @@ model Transaction {
     status            TransactionStatus
     paymentProof      String?   @map("payment_proof")
     paymentMethod     PaymentMethod @map("payment_method")
-    tickets           Tickets[]
     createdAt         DateTime  @map("created_at") @default(now())
     updatedAt         DateTime  @map("updated_at") @updatedAt
+
+    tickets           Tickets[]
 
     @@map("transactions")
 }
@@ -202,14 +226,4 @@ model Notification {
     createdAt         DateTime  @map("created_at") @default(now())
 
     @@map("notifications")
-}
-
-/// Define SQL transaction to handle rollbacks
-model SQLTransaction {
-    id                Int       @id @default(autoincrement())
-    action            String
-    status            String
-    timestamp         DateTime  @default(now())
-
-    @@map("sql_transactions")
 }

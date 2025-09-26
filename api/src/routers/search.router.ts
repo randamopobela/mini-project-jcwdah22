@@ -4,8 +4,8 @@ import searchController from "../controllers/search.controller";
 export const searchRouter = () => {
     const router = Router();
 
-    router.get("/cari-data", searchController.searchData);
-    // router.get("/hello-world", searchController.helloWorld);
+    router.get("/users", searchController.user);
+    router.get("/events", searchController.event);
 
     return router;
 };

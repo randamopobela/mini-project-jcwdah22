@@ -4,6 +4,7 @@ import { PORT } from "./config";
 import { ErrorHandler } from "./helpers/response.handler";
 import { authRouter } from "./routers/auth.router";
 import { searchRouter } from "./routers/search.router";
+import { eventRouter } from "./routers/event.router";
 
 export class App {
     private app: Application;
@@ -18,6 +19,7 @@ export class App {
     private routes() {
         this.app.use("/api/auth", authRouter());
         this.app.use("/api/search", searchRouter());
+        this.app.use("/api/event", eventRouter());
     }
 
     private configure() {

@@ -3,18 +3,23 @@ import { responseHandler } from "../helpers/response.handler";
 import searchService from "../services/search.service";
 
 class SearchController {
-    async searchData(req: Request, res: Response, next: NextFunction) {
+    async user(req: Request, res: Response, next: NextFunction) {
         try {
-            const data = await searchService.searchData(req, res, next);
+            const data = await searchService.user(req, res, next);
             responseHandler(res, "Searching success", data);
         } catch (error) {
             next(error);
         }
     }
 
-    // async helloWorld(req: Request, res: Response, next: NextFunction) {
-    //     res.json({ message: "Hello World!" });
-    // }
+    async event(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await searchService.event(req, res, next);
+            responseHandler(res, "Searching success", data);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new SearchController();

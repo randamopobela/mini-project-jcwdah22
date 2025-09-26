@@ -14,5 +14,17 @@ Login: localhost:8000/api/auth/login
     belum jadi
 }
 
-Search User: localhost:8000/api/search/cari-data
+Search User: localhost:8000/api/search/users
 
+Add Event: localhost:8000/api/event/new
+{
+  "name": "Acara Buka Bersama",
+  "description": "Buka bersama seluruh angkatan",
+  "category": "Religious",
+  "location": "kotamobagu",
+  "startDate": "2025-02-08",
+  "endDate": "2025-02-20",
+  "price": 230100,
+  "totalSeats": 40,
+  "organizerId": "USR011"
+}

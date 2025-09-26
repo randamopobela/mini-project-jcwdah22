@@ -40,8 +40,6 @@ class authService {
                 profilePicture,
                 role,
                 referredBy,
-                // points,
-                // pointsExpiration,
             } = req.body;
 
             const newUser = await prisma.user.create({
@@ -50,7 +48,7 @@ class authService {
                     email,
                     password: await hashedPassword(password),
                     firstName,
-                    lastName,
+                    lastName: lastName ?? null,
                     profilePicture: profilePicture ?? null,
                     role,
                     referralCode: generateReferralCode(),
