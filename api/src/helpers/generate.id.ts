@@ -1,6 +1,7 @@
 import { prisma } from "../config";
 
 export const generateIdUser = async () => {
+    // Mendapatkan ID terakhir dari tabel user
     const lastUser = await prisma.user.findFirst({
         orderBy: { id: "desc" },
     });

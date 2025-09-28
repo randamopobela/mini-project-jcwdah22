@@ -38,8 +38,8 @@ class searchService {
                     startDate: true,
                     endDate: true,
                     price: true,
-                    availableSeats: true,
-                    totalSeats: true,
+                    availableSlots: true,
+                    totalSlots: true,
                     organizer: {
                         select: {
                             firstName: true,

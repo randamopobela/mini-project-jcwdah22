@@ -261,7 +261,7 @@ model PointsLog {
   userId      String       
   user        User         @relation(fields: [userId], references: [id])
   type        PointsLogType
-  description String    
+  description String    // Apakah ini diperlukan jika sudah ada 'type'?
   points      Int       
   createdAt   DateTime     @default(now())
 

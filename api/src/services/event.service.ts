@@ -15,13 +15,13 @@ class eventService {
                 startDate,
                 endDate,
                 price,
-                totalSeats,
-                organizerId,
+                totalSlots,
+                organizer, //sebelumnya organizerId
             } = req.body;
 
-            const organizer = await prisma.user.findUnique({
-                where: { id: organizerId },
-            });
+            // const organizer = await prisma.user.findUnique({
+            //     where: { id: organizerId },
+            // });
 
             if (organizer) {
                 await prisma.event.create({
@@ -34,9 +34,9 @@ class eventService {
                         startDate: new Date(startDate),
                         endDate: new Date(endDate) ?? startDate,
                         price,
-                        availableSeats: totalSeats,
-                        totalSeats,
-                        organizerId,
+                        availableSlots: totalSlots,
+                        totalSlots,
+                        organizer,
                     },
                 });
             }

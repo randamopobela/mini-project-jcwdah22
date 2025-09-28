@@ -8,7 +8,7 @@ import { UserLogin } from "../interfaces/user.interface";
 import { sign } from "jsonwebtoken";
 import { hashedPassword } from "../helpers/bcrypt";
 import { generateReferralCode } from "../helpers/generate.referral";
-import { generateIdUser } from "../helpers/generate.id.table";
+import { generateIdUser } from "../helpers/generate.id";
 
 class authService {
     async login(req: Request) {
@@ -65,7 +65,7 @@ class authService {
 
                 // Menambahkan data referral ke tabel Referral
                 if (referrer) {
-                    const referrerPoints = 10; // Jumlah poin untuk referrer
+                    const referrerPoints = 10000; // Jumlah poin untuk referrer
                     const referredPoints = referrerPoints * 5; // Jumlah poin untuk referensi
 
                     await prisma.referral.create({
@@ -113,11 +113,13 @@ class authService {
                         data: [
                             {
                                 userId: referrer.id,
+                                type: "REFERRAL_BONUS",
                                 description: "REFERRAL_BONUS",
                                 points: referrerPoints,
                             },
                             {
                                 userId: newUser.id,
+                                type: "REFERRAL_BONUS",
                                 description: "WELCOME_BONUS",
                                 points: referredPoints,
                             },
