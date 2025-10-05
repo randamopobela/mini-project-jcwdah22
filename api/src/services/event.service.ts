@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { ErrorHandler } from "../helpers/response.handler";
-import { prisma } from "../config";
-import { log } from "console";
+import { prisma } from "../config/config";
 
 class eventService {
-    async new(req: Request, res: Response, next: NextFunction) {
+    async new(req: Request, _res: Response, next: NextFunction) {
         try {
             const {
                 title,

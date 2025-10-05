@@ -5,25 +5,36 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "nodemon --files src/index.ts",
-        "prisma:migrate": "dotenv -e .env.local -- npx prisma migrate dev"
+        "prisma:migrate": "dotenv -e .env.local -- npx prisma migrate dev",
+        "start": "node dist/index.js",
+        "studio": "npx prisma studio",
+        "build": "tsc"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "description": "",
+    "description": "Event Management API",
     "dependencies": {
-        "@prisma/client": "^6.2.1",
-        "@types/bcrypt": "^5.0.2",
-        "@types/express": "^5.0.0",
-        "bcrypt": "^5.1.1",
+        "@prisma/client": "^6.16.2",
+        "bcrypt": "^6.0.0",
         "cors": "^2.8.5",
+        "dotenv": "^17.2.2",
         "dotenv-cli": "^8.0.0",
-        "express": "^4.21.2",
+        "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2",
-        "prisma": "^6.2.1"
+        "prisma": "^6.2.1",
+        "multer": "^2.0.2",
+        "yup": "^1.7.0"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.17",
-        "@types/jsonwebtoken": "^9.0.8"
+        "@types/bcrypt": "^6.0.0",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.3",
+        "@types/jsonwebtoken": "^9.0.10",
+        "@types/multer": "^2.0.0",
+        "nodemon": "^3.1.10",
+        "prisma": "^6.16.2",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.9.2"
     }
 }

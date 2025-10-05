@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../config";
+import { prisma } from "../config/config";
 
 class searchService {
     async user(req: Request, res: Response, next: NextFunction) {
@@ -12,12 +12,10 @@ class searchService {
                     email: true,
                     firstName: true,
                     lastName: true,
+                    userName: true,
                     profilePicture: true,
                     role: true,
                     referralCode: true,
-                    referredBy: true,
-                    points: true,
-                    pointsExpiration: true,
                     isActive: true,
                 },
             });

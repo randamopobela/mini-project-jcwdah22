@@ -1,6 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { PORT } from "./config";
+import { PORT } from "./config/config";
 import { ErrorHandler } from "./helpers/response.handler";
 import { authRouter } from "./routers/auth.router";
 import { searchRouter } from "./routers/search.router";

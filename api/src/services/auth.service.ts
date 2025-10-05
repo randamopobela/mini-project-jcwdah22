@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { Prisma } from "@prisma/client";
-import { jwt_secret, prisma } from "../config";
+import { PointsLogType, Prisma } from "@prisma/client";
+import { jwt_secret, prisma } from "../config/config";
 import { compare } from "bcrypt";
 import { ErrorHandler } from "../helpers/response.handler";
-import { getUserByEmail } from "../helpers/user.prisma";
+import { getNewUserName, getUserByEmail } from "../helpers/user.prisma";
 import { UserLogin } from "../interfaces/user.interface";
 import { sign } from "jsonwebtoken";
 import { hashedPassword } from "../helpers/bcrypt";
@@ -37,8 +37,11 @@ class authService {
                 password,
                 firstName,
                 lastName,
+                userName,
                 profilePicture,
                 role,
+                phone,
+                address,
                 referredBy,
             } = req.body;
 
@@ -49,12 +52,12 @@ class authService {
                     password: await hashedPassword(password),
                     firstName,
                     lastName: lastName ?? null,
+                    userName: await getNewUserName(firstName, userName ?? null),
                     profilePicture: profilePicture ?? null,
                     role,
+                    phone: phone ?? null,
+                    address: address ?? null,
                     referralCode: generateReferralCode(),
-                    referredBy: referredBy ?? null,
-                    // points: points ?? 0,
-                    // pointsExpiration: pointsExpiration ?? null,
                 },
             });
 
@@ -63,76 +66,57 @@ class authService {
                     where: { referralCode: referredBy },
                 });
 
-                // Menambahkan data referral ke tabel Referral
-                if (referrer) {
-                    const referrerPoints = 10000; // Jumlah poin untuk referrer
-                    const referredPoints = referrerPoints * 5; // Jumlah poin untuk referensi
-
-                    await prisma.referral.create({
-                        data: {
-                            referrerId: referrer.id,
-                            referredId: newUser.id,
-                            referrerPoint: referrerPoints, // Jumlah poin untuk referensi
-                            referredPoint: referredPoints, // Jumlah poin untuk referensi
-                        },
-                    });
-
-                    // Update point untuk kedua referrer dan referred
-                    // Tambahkan poin untuk referrer
-                    await prisma.user.update({
-                        where: { id: referrer.id },
-                        data: {
-                            points: { increment: referrerPoints },
-                            pointsExpiration: {
-                                set: new Date(
-                                    new Date().setDate(
-                                        new Date().getDate() + 30 // Masa berlaku poin selama 30 hari
-                                    )
-                                ),
-                            },
-                        },
-                    });
-
-                    // Tambahkan poin untuk user baru
-                    await prisma.user.update({
-                        where: { id: newUser.id },
-                        data: {
-                            points: { increment: referredPoints },
-                            pointsExpiration: {
-                                set: new Date(
-                                    new Date().setDate(
-                                        new Date().getDate() + 30 // Masa berlaku poin selama 30 hari
-                                    )
-                                ),
-                            },
-                        },
-                    });
-
-                    // Log points activity for both users
-                    await prisma.pointsLog.createMany({
-                        data: [
-                            {
-                                userId: referrer.id,
-                                type: "REFERRAL_BONUS",
-                                description: "REFERRAL_BONUS",
-                                points: referrerPoints,
-                            },
-                            {
-                                userId: newUser.id,
-                                type: "REFERRAL_BONUS",
-                                description: "WELCOME_BONUS",
-                                points: referredPoints,
-                            },
-                        ],
-                    });
+                if (!referrer) {
+                    throw new ErrorHandler("Invalid referral code", 400);
                 }
+
+                // Update point untuk referrer atau pemberi kode referral
+                await prisma.pointsLog.create({
+                    data: {
+                        user: { connect: { id: referrer.id } },
+                        type: PointsLogType.REFERRAL_BONUS,
+                        description: `Referral bonus from ${newUser.userName}`,
+                        points: 10000,
+                        // expiredAt: new Date(
+                        //     new Date().setMonth(
+                        //             new Date().getMonth() + 3 // Masa berlaku kupon selama 3 bulan
+                        //         )
+                        // )
+                    },
+                });
+
+                // Membuat kupon untuk user baru
+                await prisma.coupon.create({
+                    data: {
+                        title: "Referral Bonus Coupon",
+                        description: `Welcoming coupon special for ${newUser.userName}`,
+                        couponCode: `REF-${newUser.userName.toUpperCase()}`,
+                        discountAmount: 10,
+                        expiredAt: new Date(
+                            new Date().setMonth(
+                                new Date().getMonth() + 3 // Masa berlaku kupon selama 3 bulan
+                            )
+                        ),
+                        user: { connect: { id: newUser.id } },
+                    },
+                });
+
+                // Update data referral
+                await prisma.referral.create({
+                    data: {
+                        referrer: { connect: { id: referrer.id } },
+                        referred: { connect: { id: newUser.id } },
+                    },
+                });
             }
         } catch (error) {
             next(error);
         }
     }
 
-    async logout(req: Request) {}
+    // async logout(req: Request) {}
+
+    // async forgotPassword(req: Request) {}
 }
 
 export default new authService();

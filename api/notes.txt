@@ -34,6 +34,18 @@ tambahkan "include": ["**/*.ts"] di line 108 tsconfig.json, setelah compilerOpti
 
 -----------------------------------------------------------------------------------
 
+Buat file ".env.local" (prisma bisa baca file ".env.local" karena pakai dotenv-cli):
+
+NODE_ENV=development
+DATABASE_URL="diisi url supabase"
+PORT=8000
+JWT_SECRET=secret
+EMAIL_USER=
+EMAIL_PASS=
+
+-----------------------------------------------------------------------------------
+
 BELUM:
 
 prisma migrate dev
+install nodemailer = npm i -D nodemailer

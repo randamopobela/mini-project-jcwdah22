@@ -1,4 +1,4 @@
-import { prisma } from "../config";
+import { prisma } from "../config/config";
 
 export const generateIdUser = async () => {
     // Mendapatkan ID terakhir dari tabel user
