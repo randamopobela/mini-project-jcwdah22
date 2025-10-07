@@ -34,7 +34,7 @@ model User {
     tickets           Ticket[]
     voucherAssignments VoucherAssignment[]
     coupons           Coupon[]
-    // userPoints        UserPoints[]
+    userPoints        UserPoints[]
     pointsLog         PointsLog[]
     referral          Referral[] @relation("Referrer")
     referred          Referral[] @relation("Referred")
@@ -120,7 +120,6 @@ model Transaction {
     tickets           Ticket[]
     vouchers          VoucherAssignment[]
     coupons           Coupon[]
-    // pointRedemptions  PointRedemption[]
 
     @@map("transactions")
 }
@@ -208,7 +207,7 @@ model Coupon {
     description     String
     couponCode      String        @map("coupon_code") @unique
     discountAmount  Int           @map("discount_amount")
-    expiredAt       DateTime      @map("end_date")
+    expiredAt       DateTime      @map("expired_at")
     userId          String        @map("user_id")
     user            User          @relation(fields: [userId], references: [id])
     transactionId   Int?          @map("transaction_id")
@@ -218,6 +217,8 @@ model Coupon {
     usedAt          DateTime?
     createdAt       DateTime      @map("created_at") @default(now())
     updatedAt       DateTime      @map("updated_at") @updatedAt
+
+    @@map("coupons")
 }
 model Review {
   id        Int       @id @default(autoincrement())
@@ -270,16 +271,16 @@ model Referral {
   @@map("referrals")
 }
 
-// model UserPoints {
-//     id          Int       @id @default(autoincrement())
-//     userId      String    @map("user_id") @unique
-//     user        User      @relation(fields: [userId], references: [id])
-//     totalPoints Int       @map("total_points") @default(0)
-//     createdAt   DateTime  @map("created_at") @default(now())
-//     updatedAt   DateTime  @map("updated_at") @updatedAt
+model UserPoints {
+    id          Int       @id @default(autoincrement())
+    userId      String    @map("user_id") @unique
+    user        User      @relation(fields: [userId], references: [id])
+    totalPoints Int       @map("total_points") @default(0)
+    createdAt   DateTime  @map("created_at") @default(now())
+    updatedAt   DateTime  @map("updated_at") @updatedAt
 
-//     @@map("user_points")
-// }
+    @@map("user_points")
+}
 
 model PointsLog {
   id          Int          @id @default(autoincrement())

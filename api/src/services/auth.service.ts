@@ -55,9 +55,9 @@ class authService {
                     id: await generateIdUser(),
                     email,
                     password: await hashedPassword(password),
+                    userName: await getNewUserName(firstName, userName ?? null),
                     firstName,
                     lastName: lastName ?? null,
-                    userName: await getNewUserName(firstName, userName ?? null),
                     profilePicture: profilePicture ?? null,
                     role,
                     phone: phone ?? null,
@@ -76,13 +76,39 @@ class authService {
                     throw new ErrorHandler("Invalid referral code", 400);
                 }
 
+                // Jumlah poin yang akan diberikan
+                const bonusPoint = 10000;
+
+                // Cek apakah referrer sudah memiliki poin
+                const existingPoints = await prisma.userPoints.findUnique({
+                    where: { userId: referrer.id },
+                });
+
+                if (!existingPoints) {
+                    await prisma.userPoints.create({
+                        data: {
+                            user: { connect: { id: referrer.id } },
+                            totalPoints: bonusPoint,
+                        },
+                    });
+                } else {
+                    await prisma.userPoints.update({
+                        where: { userId: referrer.id },
+                        data: {
+                            totalPoints: {
+                                increment: bonusPoint,
+                            },
+                        },
+                    });
+                }
+
                 // Update point untuk referrer atau pemberi kode referral
                 await prisma.pointsLog.create({
                     data: {
                         user: { connect: { id: referrer.id } },
                         type: PointsLogType.REFERRAL_BONUS,
                         description: `Referral bonus from ${newUser.userName}`,
-                        points: 10000,
+                        points: bonusPoint,
                         expiredAt: new Date(
                             new Date().setMonth(
                                 new Date().getMonth() + 3 // Masa berlaku kupon selama 3 bulan
