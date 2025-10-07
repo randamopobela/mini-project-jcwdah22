@@ -34,7 +34,7 @@ model User {
     tickets           Ticket[]
     voucherAssignments VoucherAssignment[]
     coupons           Coupon[]
-    // pointRedemptions  PointRedemption[]
+    // userPoints        UserPoints[]
     pointsLog         PointsLog[]
     referral          Referral[] @relation("Referrer")
     referred          Referral[] @relation("Referred")
@@ -270,18 +270,16 @@ model Referral {
   @@map("referrals")
 }
 
-// model PointRedemption {
-//     id            Int          @id @default(autoincrement())
-//     userId        String
-//     user          User         @relation(fields: [userId], references: [id])
-//     transactionId Int
-//     transaction   Transaction  @relation(fields: [transactionId], references: [id])
-//     pointsUsed    Int
-//     createdAt     DateTime     @default(now())
+// model UserPoints {
+//     id          Int       @id @default(autoincrement())
+//     userId      String    @map("user_id") @unique
+//     user        User      @relation(fields: [userId], references: [id])
+//     totalPoints Int       @map("total_points") @default(0)
+//     createdAt   DateTime  @map("created_at") @default(now())
+//     updatedAt   DateTime  @map("updated_at") @updatedAt
 
-//     @@map("point_redemptions")
+//     @@map("user_points")
 // }
-
 
 model PointsLog {
   id          Int          @id @default(autoincrement())

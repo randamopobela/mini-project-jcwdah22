@@ -21,3 +21,11 @@ export interface UserLogin {
     role: string;
     isActive: boolean;
 }
+
+export interface UserResetPassword {
+    id: string;
+    email: string;
+    firstName: string;
+    password?: string;
+    isActive: boolean;
+}

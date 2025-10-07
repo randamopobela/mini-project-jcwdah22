@@ -12,3 +12,10 @@ export const PORT = process.env.PORT || 8000;
 export const prisma = new PrismaClient();
 
 export const jwt_secret = process.env.JWT_SECRET || "";
+
+export const jwt_reset_secret = process.env.JWT_RESET_SECRET || "";
+
+export const nodemailer_account = {
+    user: process.env.NODEMAILER_USER || "",
+    pass: process.env.NODEMAILER_PASS || "",
+};

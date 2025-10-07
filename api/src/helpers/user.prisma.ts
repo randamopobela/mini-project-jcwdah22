@@ -43,3 +43,18 @@ export const getNewUserName = async (firstName?: string, userName?: string) => {
 
     return newUserName;
 };
+
+export const getUserForResetPassword = async (email: string) => {
+    return await prisma.user.findUnique({
+        select: {
+            id: true,
+            email: true,
+            firstName: true,
+            password: true,
+            isActive: true,
+        },
+        where: {
+            email,
+        },
+    });
+};

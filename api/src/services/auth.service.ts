@@ -1,14 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import { PointsLogType, Prisma } from "@prisma/client";
-import { jwt_secret, prisma } from "../config/config";
+import { jwt_reset_secret, jwt_secret, prisma } from "../config/config";
 import { compare } from "bcrypt";
 import { ErrorHandler } from "../helpers/response.handler";
-import { getNewUserName, getUserByEmail } from "../helpers/user.prisma";
-import { UserLogin } from "../interfaces/user.interface";
-import { sign } from "jsonwebtoken";
+import {
+    getNewUserName,
+    getUserByEmail,
+    getUserForResetPassword,
+} from "../helpers/user.prisma";
+import { UserLogin, UserResetPassword } from "../interfaces/user.interface";
+import { sign, verify } from "jsonwebtoken";
 import { hashedPassword } from "../helpers/bcrypt";
 import { generateReferralCode } from "../helpers/generate.referral";
 import { generateIdUser } from "../helpers/generate.id";
+import { sendEmail } from "../helpers/nodemailer";
 
 class authService {
     async login(req: Request) {
@@ -62,8 +67,9 @@ class authService {
             });
 
             if (referredBy) {
+                // Cari user yang memberikan kode referral
                 const referrer = await prisma.user.findUnique({
-                    where: { referralCode: referredBy },
+                    where: { referralCode: referredBy.toUpperCase() },
                 });
 
                 if (!referrer) {
@@ -77,15 +83,15 @@ class authService {
                         type: PointsLogType.REFERRAL_BONUS,
                         description: `Referral bonus from ${newUser.userName}`,
                         points: 10000,
-                        // expiredAt: new Date(
-                        //     new Date().setMonth(
-                        //             new Date().getMonth() + 3 // Masa berlaku kupon selama 3 bulan
-                        //         )
-                        // )
+                        expiredAt: new Date(
+                            new Date().setMonth(
+                                new Date().getMonth() + 3 // Masa berlaku kupon selama 3 bulan
+                            )
+                        ),
                     },
                 });
 
-                // Membuat kupon untuk user baru
+                // Membuat kupon untuk user baru yang mendaftar dengan kode referral
                 await prisma.coupon.create({
                     data: {
                         title: "Referral Bonus Coupon",
@@ -116,7 +122,53 @@ class authService {
 
     // async logout(req: Request) {}
 
-    // async forgotPassword(req: Request) {}
+    async forgotPassword(req: Request) {
+        const { email } = req.body;
+
+        const user = (await getUserForResetPassword(
+            email
+        )) as UserResetPassword;
+
+        if (!user) {
+            throw new ErrorHandler("Email is incorrect", 401);
+        } else if (user.isActive === false) {
+            throw new ErrorHandler("User is not active", 401);
+        }
+
+        delete user.password;
+
+        // Logic untuk membuat token reset password
+        const token = sign(user, jwt_reset_secret, {
+            expiresIn: "5m",
+        });
+
+        // Logic untuk mengirim email dengan token reset password
+        const resetLink = `https://localhost:3000/reset-password?token=${token}`;
+
+        await sendEmail(user.email, "Password Reset Request", "resetPassword", {
+            name: user.firstName,
+            link: resetLink,
+        });
+    }
+
+    async resetPassword(req: Request) {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            throw new ErrorHandler("Token and new password are required", 400);
+        }
+
+        // Memverifikasi token
+        const decoded = verify(token, jwt_reset_secret as string) as {
+            id: string;
+        };
+
+        // Update pasword baru user
+        await prisma.user.update({
+            where: { id: decoded.id },
+            data: { password: await hashedPassword(newPassword) },
+        });
+    }
 }
 
 export default new authService();
