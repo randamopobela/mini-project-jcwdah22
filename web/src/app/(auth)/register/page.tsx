@@ -12,6 +12,7 @@ import {
 import { ErrorMessage, Form, Formik } from "formik";
 import { Calendar, Mail, Phone, User, Lock } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
@@ -48,6 +49,7 @@ const RegisterSchema = Yup.object().shape({
 });
 
 export default function RegisterPage() {
+    const router = useRouter();
     const handleRegister = async (values: any) => {
         try {
             //Mengirimkan data registrasi ke backend
@@ -56,6 +58,8 @@ export default function RegisterPage() {
                 values
             );
             toast.success("Registrasi berhasil! Silakan login.");
+            router.push("/login");
+
             console.log("Response register dari backend:", response.data);
         } catch (error: any) {
             //Menghandle error saat registrasi

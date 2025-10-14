@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "flowbite";
+import "flowbite-react";
 import NavbarComponent from "@/components/Navbar";
 import FooterComponent from "@/components/Footer";
+import { ThemeInit } from "../../.flowbite-react/init";
 import { Toaster } from "sonner";
 
 // const geistSans = Geist({
@@ -29,6 +32,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className="antialiased">
+                <ThemeInit />
                 <NavbarComponent />
                 <main className="min-h-screen">{children}</main>
                 <FooterComponent />
