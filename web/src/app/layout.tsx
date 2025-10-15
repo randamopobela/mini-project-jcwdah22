@@ -7,6 +7,7 @@ import NavbarComponent from "@/components/Navbar";
 import FooterComponent from "@/components/Footer";
 import { ThemeInit } from "../../.flowbite-react/init";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -32,11 +33,13 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className="antialiased">
-                <ThemeInit />
-                <NavbarComponent />
-                <main className="min-h-screen">{children}</main>
-                <FooterComponent />
-                <Toaster position="top-right" richColors />
+                <AuthProvider>
+                    <ThemeInit />
+                    <NavbarComponent />
+                    <main className="min-h-screen">{children}</main>
+                    <FooterComponent />
+                    <Toaster position="top-right" richColors />
+                </AuthProvider>
             </body>
         </html>
     );

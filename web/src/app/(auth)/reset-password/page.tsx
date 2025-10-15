@@ -6,7 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Calendar, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const resetPasswordSchema = Yup.object().shape({
     password: Yup.string()
@@ -21,6 +21,7 @@ const resetPasswordSchema = Yup.object().shape({
 });
 
 export default function ResetPasswordPage() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams?.get("token") || ""; // ambil token dari URL
 
@@ -64,7 +65,7 @@ export default function ResetPasswordPage() {
             );
 
             console.log("✅ Reset Success:", data);
-            window.location.href = "/login"; // redirect ke login setelah sukses
+            router.push("/login"); // redirect ke login setelah sukses
 
             console.log(values);
         } catch (error: any) {

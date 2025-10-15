@@ -7,6 +7,9 @@ import { toast } from "sonner";
 import { Card, Label, TextInput, Checkbox, Button } from "flowbite-react";
 import { Calendar, Mail, Lock } from "lucide-react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 const LoginSchema = Yup.object().shape({
     email: Yup.string()
@@ -18,15 +21,21 @@ const LoginSchema = Yup.object().shape({
 });
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { login, user, isLoading } = useAuth();
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            router.push("/");
+        }
+    }, [user, isLoading, router]);
+
     const handleLogin = async (values: { email: string; password: string }) => {
         try {
             //Mengirimkan data login ke backend
-            const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-                values
-            );
+            await login(values.email, values.password);
             toast.success("Login berhasil!");
-            console.log("Response login dari backend:", response.data);
+            router.push("/");
         } catch (error: any) {
             //Menghandle error saat registrasi
             console.log(error);
@@ -39,6 +48,14 @@ export default function LoginPage() {
             );
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                Memuat...
+            </div>
+        );
+    }
 
     return (
         <div className="flex items-center justify-center min-h-screen py-12 px-4">

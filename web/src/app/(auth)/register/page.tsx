@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
+import API from "@/lib/axiosInstance";
 import axios from "axios";
 import {
     Button,
@@ -13,6 +15,7 @@ import { ErrorMessage, Form, Formik } from "formik";
 import { Calendar, Mail, Phone, User, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
@@ -50,13 +53,18 @@ const RegisterSchema = Yup.object().shape({
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { user, isLoading } = useAuth();
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            router.push("/");
+        }
+    }, [user, isLoading, router]);
+
     const handleRegister = async (values: any) => {
         try {
             //Mengirimkan data registrasi ke backend
-            const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-                values
-            );
+            const response = await API.post("/auth/register", values);
             toast.success("Registrasi berhasil! Silakan login.");
             router.push("/login");
 

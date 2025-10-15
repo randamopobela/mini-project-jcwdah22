@@ -8,6 +8,7 @@ import {
     ReactNode,
 } from "react";
 import { User, UserRegister } from "@/types/user";
+import API from "@/lib/axiosInstance";
 
 interface AuthContextType {
     user: User | null;
@@ -32,20 +33,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string) => {
-        const mockUser: User = {
-            email,
-            userName: email.split("@")[0],
-            firstName: "John",
-            lastName: "Doe",
-            role: "CUSTOMER",
-            referralCode: "REF123456",
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
+        try {
+            const response = await API.post(
+                "/auth/login",
+                { email, password }
+                // { withCredentials: true } // opsional, kalau backend pakai cookie
+            );
 
-        setUser(mockUser);
-        localStorage.setItem("user", JSON.stringify(mockUser));
+            const userData = response.data?.user || response.data; // tergantung struktur response
+
+            setUser(userData);
+
+            localStorage.setItem("user", JSON.stringify(userData));
+        } catch (error: any) {
+            const msg = error.response?.data?.message || "Login gagal!";
+            console.error("Login error:", msg);
+            throw new Error(msg);
+        }
     };
 
     // const register = async (data: UserRegister) => {
@@ -82,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     return context;

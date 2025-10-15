@@ -169,7 +169,7 @@ class authService {
         });
 
         // Logic untuk mengirim email dengan token reset password
-        const resetLink = `https://localhost:3000/reset-password?token=${token}`;
+        const resetLink = `http://localhost:3000/reset-password?token=${token}`;
 
         await sendEmail(user.email, "Password Reset Request", "resetPassword", {
             name: user.firstName,

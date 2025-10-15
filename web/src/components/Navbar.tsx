@@ -39,7 +39,7 @@ export default function NavbarComponent() {
                 <NavbarLink href="/" active>
                     Find Events
                 </NavbarLink>
-                <NavbarLink href="/dashboard">Create Events</NavbarLink>
+                <NavbarLink href="/dashboard">Dashboard</NavbarLink>
                 <NavbarLink href="/pricing">Pricing</NavbarLink>
                 <NavbarLink href="/help">Help Center</NavbarLink>
             </NavbarCollapse>
