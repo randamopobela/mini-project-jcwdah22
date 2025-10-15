@@ -9,6 +9,7 @@ import {
 } from "react";
 import { User, UserRegister } from "@/types/user";
 import API from "@/lib/axiosInstance";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
     user: User | null;
@@ -23,6 +24,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const router = useRouter();
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -75,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = () => {
         setUser(null);
         localStorage.removeItem("user");
+        router.push("/"); // Redirect ke beranda setelah logout
     };
 
     return (

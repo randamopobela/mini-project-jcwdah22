@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import flowbite from "flowbite";
 import {
     Navbar,
@@ -10,9 +11,12 @@ import {
     NavbarCollapse,
     NavbarLink,
 } from "flowbite-react";
-import { Calendar } from "lucide-react";
+import { Calendar, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function NavbarComponent() {
+    const { user, logout } = useAuth();
+
     return (
         <Navbar fluid className="border-b border-gray-300 sticky top-0 z-50">
             <NavbarBrand as={Link} href="/">
@@ -22,26 +26,59 @@ export default function NavbarComponent() {
                 </span>
             </NavbarBrand>
             <div className="flex md:order-2 gap-2">
-                <Link href="/login">
-                    <button className="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
-                        <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-transparent group-hover:dark:bg-transparent">
-                            Log In
-                        </span>
-                    </button>
-                </Link>
-                <Link href="/register">
-                    <button className="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
-                        Sign Up
-                    </button>
-                </Link>
+                {user ? (
+                    <>
+                        <Link href="/profile">
+                            <Button className="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm gap-1 px-5 py-2.5 text-center me-2 mb-2">
+                                <Image
+                                    src="https://flowbite.com/docs/images/logo.svg" // ganti dengan path avatar user
+                                    alt="Avatar"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full"
+                                />
+                                <span>Profile</span>
+                            </Button>
+                        </Link>
+
+                        <Button
+                            onClick={logout}
+                            className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 gap-1 text-center me-2 mb-2"
+                        >
+                            <LogOut />
+                            Logout
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <Link href="/login">
+                            <Button className="text-gray-900 bg-gradient-to-r from-red-200 via-red-300 to-yellow-200 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-red-100 dark:focus:ring-red-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+                                Log In
+                            </Button>
+                        </Link>
+                        <Link href="/register">
+                            <Button className="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+                                Sign Up
+                            </Button>
+                        </Link>
+                    </>
+                )}
             </div>
             <NavbarCollapse>
-                <NavbarLink href="/" active>
-                    Find Events
-                </NavbarLink>
-                <NavbarLink href="/dashboard">Dashboard</NavbarLink>
-                <NavbarLink href="/pricing">Pricing</NavbarLink>
-                <NavbarLink href="/help">Help Center</NavbarLink>
+                {user ? (
+                    <>
+                        <NavbarLink href="/" active>
+                            Find Events
+                        </NavbarLink>
+                        {/* {user.role === "ORGANIZER" && (
+                        )} */}
+                        <NavbarLink href="/dashboard">Dashboard</NavbarLink>
+                        <NavbarLink href="/transaction">Transaction</NavbarLink>
+                        <NavbarLink href="/about">About</NavbarLink>
+                    </>
+                ) : (
+                    <></>
+                )}
             </NavbarCollapse>
         </Navbar>
     );

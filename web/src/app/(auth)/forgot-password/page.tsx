@@ -5,8 +5,8 @@ import * as Yup from "yup";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Calendar, Mail, ArrowLeft } from "lucide-react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import API from "@/lib/axiosInstance";
 
 const ForgotPasswordSchema = Yup.object().shape({
     email: Yup.string()
@@ -18,10 +18,7 @@ export default function ForgotPasswordPage() {
     const handleForgotPassword = async (values: { email: string }) => {
         const router = useRouter();
         try {
-            const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`,
-                values
-            );
+            const response = await API.post("/auth/forgot-password", values);
             console.log(
                 "Response forgot-password dari backend:",
                 response.data

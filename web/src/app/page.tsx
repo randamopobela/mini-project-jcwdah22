@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { Badge, Button, Card, TextInput } from "flowbite-react";
 import {
     ArrowRight,
@@ -70,6 +71,7 @@ const featuredEvents = [
 ];
 
 export default function HomePage() {
+    const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const [location, setLocation] = useState("");
 
@@ -227,12 +229,21 @@ export default function HomePage() {
                     <p className="text-xl text-orange-100 mb-8">
                         Create and manage events with ease using our platform
                     </p>
-                    <Link href="/dashboard">
-                        <Button size="xl" color="light">
-                            Create an event
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    </Link>
+                    {!user ? (
+                        <Link href="/login">
+                            <Button size="xl" color="light">
+                                Create an event
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                        </Link>
+                    ) : (
+                        <Link href="/dashboard">
+                            <Button size="xl" color="light">
+                                Create an event
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             </section>
 
