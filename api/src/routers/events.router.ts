@@ -1,13 +1,13 @@
 import { Router } from "express";
-import eventsController from "../controllers/eventS.controller";
+import eventSController from "../controllers/events.controller";
 
 export const eventRouter = () => {
   const router = Router();
 
-  router.post("/", eventsController.getAllPublicEvents);
-  router.get("/categories", eventsController.getAllCategories);
-  router.get("/locations", eventsController.getUniqueLocations);
-  router.get("/:id", eventsController.getPublicEventById);
+  router.post("/", eventSController.getAllPublicEvents);
+  router.get("/categories", eventSController.getAllCategories);
+  router.get("/locations", eventSController.getUniqueLocations);
+  router.get("/:id", eventSController.getPublicEventById);
 
   return router;
 };
