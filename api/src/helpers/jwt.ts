@@ -1,9 +1,9 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 
-const jwtSecret = process.env.AUTH_JWT_SECRET;
+const jwtSecret = process.env.JWT_SECRET;
 
 if (!jwtSecret) {
-  throw new Error("AUTH_JWT_SECRET is not set in environment variables.");
+  throw new Error("JWT_SECRET is not set in environment variables.");
 }
 
 export const generateJWT = (payload: object): string => {

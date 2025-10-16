@@ -3,7 +3,7 @@ import myeventController from "../controllers/myevent.controller";
 import { organizerGuard, verifyToken } from "../middlewares/auth.middleware";
 import { uploader } from "../middlewares/express/uploader";
 
-export const eventRouter = () => {
+export const myeventRouter = () => {
   const router = Router();
 
   router.post(

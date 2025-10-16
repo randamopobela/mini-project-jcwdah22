@@ -3,8 +3,8 @@ import cors from "cors";
 import { PORT } from "./config/config";
 import { ErrorHandler } from "./helpers/response.handler";
 import { authRouter } from "./routers/auth.router";
-import { searchRouter } from "./routers/search.router";
 import { eventRouter } from "./routers/events.router";
+import { myeventRouter } from "./routers/myEvent.route";
 
 export class App {
   private app: Application;
@@ -19,7 +19,7 @@ export class App {
   private routes() {
     this.app.use("/api/auth", authRouter());
     this.app.use("/api/events", eventRouter());
-    this.app.use("/api/search", searchRouter());
+    this.app.use("/api/myevent", myeventRouter());
   }
 
   private configure() {
