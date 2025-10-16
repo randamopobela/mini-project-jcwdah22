@@ -1,0 +1,53 @@
+Events (Untuk Publik)
+
+Fungsi-fungsi ini ditujukan untuk dilihat oleh semua pengunjung website atau aplikasi. Endpoint ini bersifat read-only (hanya bisa mengambil data) dan hanya menampilkan event yang statusnya sudah PUBLISHED.
+
+ 1. Mendapatkan Semua Event Publik (`findAllPublic`)
+     Tujuan: Menampilkan daftar semua event yang sudah dipublikasikan dengan fitur filter (pencarian judul, lokasi, kategori) dan paginasi.
+     Endpoint: `GET /api/events`
+
+ 2. Mendapatkan Detail Satu Event Publik (`findPublicById`)
+     Tujuan: Menampilkan informasi lengkap dari satu event spesifik berdasarkan ID-nya.
+     Endpoint: `GET /api/events/:id`
+
+ 3. Mendapatkan Semua Kategori (`findAllCategories`)
+     Tujuan: Memberikan daftar semua kemungkinan kategori event yang ada untuk digunakan di filter pencarian.
+     Endpoint: `GET /api/categories` (atau bisa digabungkan di endpoint lain jika perlu)
+
+ 4. Mendapatkan Lokasi Unik (`findUniqueLocations`)
+     Tujuan: Memberikan daftar nama lokasi unik dari semua event yang ada untuk digunakan di filter pencarian.
+     Endpoint: `GET /api/locations` (atau bisa digabungkan)
+
+
+
+My Events (Khusus Organizer)
+
+Fungsi-fungsi ini hanya bisa diakses oleh pengguna yang sudah login dengan peran (`role`) sebagai ORGANIZER atau ADMIN. Semua endpoint ini dilindungi oleh middleware autentikasi.
+
+ 1. Membuat Event Baru (`create`)
+     Tujuan: Organizer membuat event baru. Event yang dibuat akan memiliki status awal DRAFT.
+     Endpoint: `POST /api/my-events`
+
+ 2. Mengambil Semua Event Milik Organizer (`findAllByOrganizer`)
+     Tujuan: Menampilkan daftar semua event (baik yang draft maupun yang sudah published) yang dibuat oleh organizer yang sedang login.
+     Endpoint: `GET /api/my-events`
+
+ 3. Mengambil Detail Satu Event Milik Organizer (`findByIdAndOrganizer`)
+     Tujuan: Menampilkan detail lengkap satu event, dengan memastikan event tersebut adalah milik organizer yang sedang login.
+     Endpoint: `GET /api/my-events/:id`
+
+ 4. Mengedit Event (`update`)
+     Tujuan: Memperbarui detail dari event yang sudah ada (judul, deskripsi, tanggal, gambar, dll).
+     Endpoint: `PATCH /api/my-events/:id`
+
+ 5. Mempublikasikan Event (`publish`)
+     Tujuan: Mengubah status event dari DRAFT menjadi PUBLISHED agar bisa dilihat oleh publik.
+     Endpoint: `PATCH /api/my-events/:id/publish`
+
+ 6. Menghapus Event (`delete`)
+     Tujuan: Menghapus event milik organizer secara permanen.
+     Endpoint: `DELETE /api/my-events/:id`
+
+ 7. Membuat Voucher untuk Event (`createVoucher`)
+     Tujuan: Menambahkan voucher diskon yang terikat pada event spesifik milik organizer.
+     Endpoint: `POST /api/my-events/:id/vouchers`
