@@ -1,5 +1,5 @@
 // Interface untuk UserRegister
-export interface UserRegister {
+export interface IUserRegister {
     id: string;
     email: string;
     password: string;
@@ -14,7 +14,7 @@ export interface UserRegister {
 }
 
 // interface untuk UserLogin
-export interface UserLogin {
+export interface IUserLogin {
     id: string;
     email: string;
     password?: string;
@@ -22,7 +22,7 @@ export interface UserLogin {
     isActive: boolean;
 }
 
-export interface UserResetPassword {
+export interface IUserResetPassword {
     id: string;
     email: string;
     firstName: string;
