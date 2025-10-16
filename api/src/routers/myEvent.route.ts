@@ -6,56 +6,29 @@ import { uploader } from "../middlewares/express/uploader";
 export const myeventRouter = () => {
   const router = Router();
 
+  router.use(verifyToken, organizerGuard);
+
   router.post(
     "/create",
-    verifyToken,
-    organizerGuard,
     uploader("IMG", "/images").single("file"),
     myeventController.createEvent
   );
 
-  router.get(
-    "/all",
-    verifyToken,
-    organizerGuard,
-    myeventController.getAllmyEvents
-  );
+  router.get("/all", myeventController.getAllmyEvents);
 
-  router.get(
-    "/:id",
-    verifyToken,
-    organizerGuard,
-    myeventController.getMyEventById
-  );
+  router.get("/:id", myeventController.getMyEventById);
 
-  router.patch(
-    "/:id/publish",
-    verifyToken,
-    organizerGuard,
-    myeventController.publishmyEvent
-  );
+  router.patch("/:id/publish", myeventController.publishmyEvent);
 
   router.patch(
     "/:id",
-    verifyToken,
-    organizerGuard,
     uploader("IMG", "/images").single("file"),
     myeventController.editmyEvent
   );
 
-  router.post(
-    "/:id/vouchers",
-    verifyToken,
-    organizerGuard,
-    myeventController.createVoucher
-  );
+  router.post("/:id/vouchers", myeventController.createVoucher);
 
-  router.delete(
-    "/:id",
-    verifyToken,
-    organizerGuard,
-    myeventController.deletemyEvent
-  );
+  router.delete("/:id", myeventController.deletemyEvent);
 
   return router;
 };
