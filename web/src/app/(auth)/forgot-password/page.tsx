@@ -15,28 +15,16 @@ const ForgotPasswordSchema = Yup.object().shape({
 });
 
 export default function ForgotPasswordPage() {
+    const router = useRouter();
     const handleForgotPassword = async (values: { email: string }) => {
-        const router = useRouter();
         try {
-            const response = await API.post("/auth/forgot-password", values);
-            console.log(
-                "Response forgot-password dari backend:",
-                response.data
-            );
+            await API.post("/auth/forgot-password", values);
             toast.success("Link reset password telah dikirim ke email Anda!");
 
             router.push("/login");
-
-            console.log(values);
         } catch (error: any) {
-            console.log(error);
-            const message =
-                error.response?.data?.message ||
-                "Terjadi kesalahan saat login.";
-            console.log("Error forgot-password dari backend:", message);
-            toast.error(
-                "Gagal mengirim link reset password. Silakan coba lagi."
-            );
+            const errorMessage = error.response?.data?.message;
+            toast.error(`Gagal mengirim link reset password. ${errorMessage}`);
         }
     };
 

@@ -1,4 +1,4 @@
-import { EventCategory } from "@prisma/client";
+import { Event, EventCategory, EventStatus } from "@prisma/client";
 
 // Tipe data untuk input agar lebih jelas dan aman
 export interface IEventData {
@@ -10,6 +10,7 @@ export interface IEventData {
     isFree: boolean;
     eventPicture: string;
     organizerId: string;
+    status: EventStatus;
     category: EventCategory;
     price: number;
     totalSlots: number;

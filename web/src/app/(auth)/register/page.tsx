@@ -64,19 +64,13 @@ export default function RegisterPage() {
     const handleRegister = async (values: any) => {
         try {
             //Mengirimkan data registrasi ke backend
-            const response = await API.post("/auth/register", values);
+            await API.post("/auth/register", values);
             toast.success("Registrasi berhasil! Silakan login.");
             router.push("/login");
-
-            console.log("Response register dari backend:", response.data);
         } catch (error: any) {
             //Menghandle error saat registrasi
-            console.log(error);
-            const message =
-                error.response?.data?.message ||
-                "Terjadi kesalahan saat registrasi.";
-            console.log("Error register dari backend:", message);
-            toast.error("Registrasi gagal! Silakan coba lagi.");
+            const message = error.response?.data?.message;
+            toast.error(`Registrasi gagal! Silakan coba lagi. ${message}`);
         }
     };
 
@@ -365,7 +359,7 @@ export default function RegisterPage() {
 
                             <Button
                                 type="submit"
-                                color="warning"
+                                color="blue"
                                 disabled={isSubmitting}
                                 size="lg"
                             >

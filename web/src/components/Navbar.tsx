@@ -31,13 +31,16 @@ export default function NavbarComponent() {
                         <Link href="/profile">
                             <Button className="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm gap-1 px-5 py-2.5 text-center me-2 mb-2">
                                 <Image
-                                    src="https://flowbite.com/docs/images/logo.svg" // ganti dengan path avatar user
+                                    src={
+                                        user.profilePicture ||
+                                        "https://flowbite.com/docs/images/logo.svg"
+                                    } // ganti dengan path avatar user
                                     alt="Avatar"
                                     width={24}
                                     height={24}
                                     className="rounded-full"
                                 />
-                                <span>Profile</span>
+                                <span>{user.firstName}</span>
                             </Button>
                         </Link>
 
@@ -70,10 +73,12 @@ export default function NavbarComponent() {
                         <NavbarLink href="/" active>
                             Find Events
                         </NavbarLink>
-                        {/* {user.role === "ORGANIZER" && (
-                        )} */}
-                        <NavbarLink href="/dashboard">Dashboard</NavbarLink>
-                        <NavbarLink href="/transaction">Transaction</NavbarLink>
+                        {user.role === "ORGANIZER" && (
+                            <NavbarLink href="/dashboard">Dashboard</NavbarLink>
+                        )}
+                        <NavbarLink href="/transactions">
+                            Transaction
+                        </NavbarLink>
                         <NavbarLink href="/about">About</NavbarLink>
                     </>
                 ) : (

@@ -107,7 +107,16 @@ export default function CreateEventPage() {
                 organizerId: "USR001", // ✅ ambil dari user login
             };
 
-            await API.post("/create", payload);
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const token = user.data.token;
+
+            console.log("Token:", token, payload);
+
+            await API.post("/myevent/create", payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
             console.log("Payload event:", payload);
             toast.success("Event berhasil dibuat!");

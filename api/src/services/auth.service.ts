@@ -21,11 +21,11 @@ class authService {
 
         const user = (await getUserByEmail(email)) as IUserLogin;
         if (!user) {
-            throw new ErrorHandler("Email is incorrect", 401);
+            throw new ErrorHandler("Email is incorrect.", 401);
         } else if (user.isActive === false) {
-            throw new ErrorHandler("User is not active", 401);
+            throw new ErrorHandler("User is not active.", 401);
         } else if (!(await compare(password, user.password as string))) {
-            throw new ErrorHandler("Password is incorrect", 401);
+            throw new ErrorHandler("Password is incorrect.", 401);
         }
 
         delete user.password;
@@ -73,7 +73,7 @@ class authService {
                 });
 
                 if (!referrer) {
-                    throw new ErrorHandler("Invalid referral code", 400);
+                    throw new ErrorHandler("Invalid referral code.", 400);
                 }
 
                 // Jumlah poin yang akan diberikan
@@ -156,9 +156,9 @@ class authService {
         )) as IUserResetPassword;
 
         if (!user) {
-            throw new ErrorHandler("Email is incorrect", 401);
+            throw new ErrorHandler("Email is incorrect.", 401);
         } else if (user.isActive === false) {
-            throw new ErrorHandler("User is not active", 401);
+            throw new ErrorHandler("User is not active.", 401);
         }
 
         delete user.password;

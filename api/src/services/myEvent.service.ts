@@ -22,11 +22,11 @@ class MyEventsService {
                 isFree: data.isFree,
                 eventPicture: data.eventPicture,
                 organizerId: data.organizerId,
+                status: EventStatus.DRAFT,
+                category: EventCategory[data.category],
                 price: data.price,
                 totalSlots: data.totalSlots,
                 availableSlots: data.totalSlots, // Saat dibuat, slot tersedia = total slot
-                status: EventStatus.DRAFT,
-                category: data.category,
             },
         });
     }

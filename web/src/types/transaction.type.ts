@@ -1,18 +1,16 @@
 export type TTransaction = {
-    id: number;
+    id?: number;
     eventId: number;
-    event: TEvent;
     userId: string;
-    user: TUser;
     ticketQuantity: number;
     totalPrice: number;
     discountPoints: number;
     discountVouchers: number;
     discountCoupons: number;
     finalPrice: number;
-    status: string;
+    status: string; // enum di prisman = AWAITING_PAYMENT, PENDING_CONFIRMATION, PAID, REJECTED, EXPIRED, CANCELED
     paymentProof: string;
-    paymentMethod: string;
+    paymentMethod: string; // enum di prisman = BANK_TRANSFER, CREDIT_CARD, E_WALLET
     expiredAt: Date;
     createdAt: Date;
     updatedAt: Date;
