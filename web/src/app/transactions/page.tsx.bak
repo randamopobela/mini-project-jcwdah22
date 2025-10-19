@@ -1,0 +1,343 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, Badge, Button } from 'flowbite-react';
+import { Calendar, MapPin, Ticket, Eye, Upload, CheckCircle, XCircle } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Transaction } from '@/types';
+
+const mockTransactions: Transaction[] = [
+  {
+    id: 1,
+    userId: '1',
+    eventId: 1,
+    quantity: 2,
+    totalPrice: 500000,
+    paymentMethod: 'BANK_TRANSFER',
+    paymentProof: 'https://example.com/proof1.jpg',
+    status: 'PENDING',
+    expiredAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    event: {
+      id: 1,
+      title: 'Jakarta Marathon 2024',
+      category: 'MARATHON',
+      location: 'Jakarta, Indonesia',
+      startDate: '2024-11-15',
+      endDate: '2024-11-15',
+      price: 250000,
+      availableSlots: 750,
+      totalSlots: 1000,
+      organizerId: '2',
+      status: 'PUBLISHED',
+      isFree: false,
+      description: 'Marathon event di Jakarta',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  },
+  {
+    id: 2,
+    userId: '1',
+    eventId: 2,
+    quantity: 1,
+    totalPrice: 150000,
+    paymentMethod: 'E_WALLET',
+    status: 'PAID',
+    expiredAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    event: {
+      id: 2,
+      title: 'Bali Fun Run',
+      category: 'FUN_RUN',
+      location: 'Bali, Indonesia',
+      startDate: '2024-11-22',
+      endDate: '2024-11-22',
+      price: 150000,
+      availableSlots: 500,
+      totalSlots: 500,
+      organizerId: '2',
+      status: 'PUBLISHED',
+      isFree: false,
+      description: 'Fun run di Bali',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  },
+];
+
+export default function TransactionsPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return <div className="min-h-screen flex items-center justify-center">Memuat...</div>;
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return <Badge color="success">Dibayar</Badge>;
+      case 'PENDING':
+        return <Badge color="warning">Menunggu Pembayaran</Badge>;
+      case 'REJECTED':
+        return <Badge color="failure">Ditolak</Badge>;
+      case 'EXPIRED':
+        return <Badge color="gray">Kadaluarsa</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  const filteredTransactions = mockTransactions.filter((t) => {
+    if (activeTab === 0) return true;
+    if (activeTab === 1) return t.status === 'PENDING';
+    if (activeTab === 2) return t.status === 'PAID';
+    return t.status === 'REJECTED' || t.status === 'EXPIRED';
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="max-w-7xl mx-auto px-4 py-12">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Pembelian Tiket</h1>
+          <p className="text-gray-600">Kelola transaksi dan tiket event Anda</p>
+        </div>
+
+        <div className="mb-6">
+          <div className="flex border-b border-gray-200">
+            <button
+              className={`px-6 py-3 font-medium ${
+                activeTab === 0
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setActiveTab(0)}
+            >
+              Semua Transaksi
+            </button>
+            <button
+              className={`px-6 py-3 font-medium ${
+                activeTab === 1
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setActiveTab(1)}
+            >
+              Menunggu Pembayaran
+            </button>
+            <button
+              className={`px-6 py-3 font-medium ${
+                activeTab === 2
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setActiveTab(2)}
+            >
+              Dibayar
+            </button>
+            <button
+              className={`px-6 py-3 font-medium ${
+                activeTab === 3
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setActiveTab(3)}
+            >
+              Ditolak/Kadaluarsa
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 0 && (
+            <div className="space-y-4 mt-6">
+              {filteredTransactions.length === 0 ? (
+                <Card>
+                  <p className="text-center text-gray-500 py-8">Belum ada transaksi</p>
+                </Card>
+              ) : (
+                filteredTransactions.map((transaction) => (
+                  <Card key={transaction.id}>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-semibold">{transaction.event?.title}</h3>
+                          {getStatusBadge(transaction.status)}
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <MapPin className="mr-2 h-4 w-4" />
+                            {transaction.event?.location}
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {transaction.event &&
+                              new Date(transaction.event.startDate).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                              })}
+                          </div>
+                          <div className="flex items-center">
+                            <Ticket className="mr-2 h-4 w-4" />
+                            {transaction.quantity} Tiket
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <p className="text-lg font-bold text-blue-600">
+                            Rp {transaction.totalPrice.toLocaleString('id-ID')}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ID Transaksi: TRX-{transaction.id.toString().padStart(6, '0')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Link href={`/transactions/${transaction.id}`}>
+                          <Button size="sm" className="w-full">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Detail
+                          </Button>
+                        </Link>
+                        {transaction.status === 'PENDING' && !transaction.paymentProof && (
+                          <Button size="sm" color="gray" className="w-full">
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Bukti
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          
+
+          && (
+            <div className="space-y-4 mt-6">
+              {filteredTransactions.length === 0 ? (
+                <Card>
+                  <p className="text-center text-gray-500 py-8">
+                    Tidak ada transaksi menunggu pembayaran
+                  </p>
+                </Card>
+              ) : (
+                filteredTransactions.map((transaction) => (
+                  <Card key={transaction.id}>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-semibold">{transaction.event?.title}</h3>
+                          {getStatusBadge(transaction.status)}
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Ticket className="mr-2 h-4 w-4" />
+                            {transaction.quantity} Tiket - Rp{' '}
+                            {transaction.totalPrice.toLocaleString('id-ID')}
+                          </div>
+                        </div>
+                      </div>
+                      <Link href={`/transactions/${transaction.id}`}>
+                        <Button size="sm">
+                          <Eye className="mr-2 h-4 w-4" />
+                          Detail
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          
+
+          && (
+            <div className="space-y-4 mt-6">
+              {filteredTransactions.length === 0 ? (
+                <Card>
+                  <p className="text-center text-gray-500 py-8">Belum ada transaksi dibayar</p>
+                </Card>
+              ) : (
+                filteredTransactions.map((transaction) => (
+                  <Card key={transaction.id}>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-semibold">{transaction.event?.title}</h3>
+                          {getStatusBadge(transaction.status)}
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Ticket className="mr-2 h-4 w-4" />
+                            {transaction.quantity} Tiket - Rp{' '}
+                            {transaction.totalPrice.toLocaleString('id-ID')}
+                          </div>
+                        </div>
+                      </div>
+                      <Link href={`/transactions/${transaction.id}`}>
+                        <Button size="sm">
+                          <Ticket className="mr-2 h-4 w-4" />
+                          Lihat Tiket
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          
+
+          && (
+            <div className="space-y-4 mt-6">
+              {filteredTransactions.length === 0 ? (
+                <Card>
+                  <p className="text-center text-gray-500 py-8">Tidak ada transaksi ditolak</p>
+                </Card>
+              ) : (
+                filteredTransactions.map((transaction) => (
+                  <Card key={transaction.id}>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-semibold">{transaction.event?.title}</h3>
+                          {getStatusBadge(transaction.status)}
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Ticket className="mr-2 h-4 w-4" />
+                            {transaction.quantity} Tiket - Rp{' '}
+                            {transaction.totalPrice.toLocaleString('id-ID')}
+                          </div>
+                        </div>
+                      </div>
+                      <Link href={`/transactions/${transaction.id}`}>
+                        <Button size="sm" color="gray">
+                          <Eye className="mr-2 h-4 w-4" />
+                          Detail
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
+                ))
+              )}
+          </div>
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+}

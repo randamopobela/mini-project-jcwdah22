@@ -1,1 +1,84 @@
-// hello world
+import { NextFunction, Request, Response } from "express";
+import { prisma } from "../config/config";
+import { verifyJWT } from "../helpers/jwt";
+import { ErrorHandler } from "../helpers/response.handler";
+import TUser from "../models/user.model";
+
+export const uniqueUserGuard = async (
+    req: Request,
+    _: Response,
+    next: NextFunction
+) => {
+    try {
+        const { email } = req.body;
+        const user = await prisma.user.findUnique({
+            where: {
+                email,
+            },
+        });
+        if (user) throw new ErrorHandler("User already exists", 400);
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const adminGuard = async (
+    req: Request,
+    _: Response,
+    next: NextFunction
+) => {
+    try {
+        if (!req.user) throw new ErrorHandler("User not authenticated", 401);
+        if (req.user.role !== "ADMIN")
+            throw new ErrorHandler("Access denied: Admins only", 403);
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const organizerGuard = async (
+    req: Request,
+    _: Response,
+    next: NextFunction
+) => {
+    try {
+        if (!req.user) throw new ErrorHandler("User not authenticated", 401);
+        const allowRoles = ["ORGANIZER", "ADMIN"];
+        if (!allowRoles.includes(req.user.role))
+            throw new ErrorHandler("Access denied", 403);
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const verifyToken = async (
+    req: Request,
+    _: Response,
+    next: NextFunction
+) => {
+    try {
+        const authHeader = req.get("authorization");
+        if (!authHeader)
+            throw new ErrorHandler("Authorization header missing", 401);
+
+        const token = authHeader.split(" ")[1];
+        if (!token) throw new ErrorHandler("Token missing", 401);
+
+        const decoded = verifyJWT(token) as TUser;
+        if (!decoded) throw new ErrorHandler("Invalid token", 403);
+
+        // normalize nullable fields to match IUserLogin (which expects string | undefined)
+        const userForReq = {
+            ...decoded,
+            lastName: decoded.lastName ?? undefined,
+            profilePicture: decoded.profilePicture ?? undefined,
+        };
+        req.user = userForReq as any;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};

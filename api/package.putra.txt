@@ -1,0 +1,31 @@
+Package.json yang lama, sebelum menyesuaikan dengan punya Khalif
+
+{
+    "name": "api",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "nodemon --files src/index.ts",
+        "prisma:migrate": "dotenv -e .env.local -- npx prisma migrate dev"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "@prisma/client": "^6.2.1",
+        "@types/bcrypt": "^5.0.2",
+        "@types/express": "^5.0.0",
+        "bcrypt": "^5.1.1",
+        "cors": "^2.8.5",
+        "dotenv-cli": "^8.0.0",
+        "express": "^4.21.2",
+        "jsonwebtoken": "^9.0.2",
+        "prisma": "^6.2.1"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/jsonwebtoken": "^9.0.8"
+    }
+}
