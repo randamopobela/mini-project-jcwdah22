@@ -15,6 +15,8 @@ export const jwt_secret = process.env.JWT_SECRET || "";
 
 export const jwt_reset_secret = process.env.JWT_RESET_SECRET || "";
 
+export const client_url = process.env.CLIENT_URL || "http://localhost:3000";
+
 export const nodemailer_account = {
     user: process.env.NODEMAILER_USER || "",
     pass: process.env.NODEMAILER_PASS || "",

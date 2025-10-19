@@ -38,13 +38,8 @@ export default function LoginPage() {
             router.push("/");
         } catch (error: any) {
             //Menghandle error saat registrasi
-            console.log(error);
-            const message =
-                error.response?.data?.message ||
-                "Terjadi kesalahan saat login.";
-            console.log("Error login dari backend:", message);
             toast.error(
-                "Login gagal! Periksa kembali email dan password Anda."
+                `Login gagal! Periksa kembali email dan password Anda. ${error.message}`
             );
         }
     };
@@ -158,7 +153,7 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                color="warning"
+                                color="blue"
                                 disabled={isSubmitting}
                                 size="lg"
                             >

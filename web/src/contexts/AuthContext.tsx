@@ -7,11 +7,13 @@ import {
     useState,
     ReactNode,
 } from "react";
-import { User, UserRegister } from "@/types/user";
+import { TUser } from "@/types/user.type";
 import API from "@/lib/axiosInstance";
+import { jwtDecode } from "jwt-decode";
+import { getToken, removeToken, setToken } from "@/utils/auth";
 
 interface AuthContextType {
-    user: User | null;
+    user: TUser | null;
     login: (email: string, password: string) => Promise<void>;
     // register: (data: UserRegister) => Promise<void>;
     logout: () => void;
@@ -21,13 +23,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<TUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+        // Mengambil data user dari localStorage setelah refresh halaman, jika ada
+        // agar tidak perlu login lagi.
+        const token = getToken();
+        if (token) {
+            const userDecoded: TUser = jwtDecode(token);
+            setUser(userDecoded);
         }
         setIsLoading(false);
     }, []);
@@ -40,15 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // { withCredentials: true } // opsional, kalau backend pakai cookie
             );
 
-            const userData = response.data?.user || response.data; // tergantung struktur response
+            API.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${response.data?.data?.token}`;
 
-            setUser(userData);
+            // Menyimpan token dari response.data.data ke dalam localStorage
+            const userToken = response.data?.data?.token;
+            setToken(userToken);
 
-            localStorage.setItem("user", JSON.stringify(userData));
+            // Mengambil data user dari token
+            const userDecoded: TUser = jwtDecode(userToken);
+            setUser(userDecoded);
         } catch (error: any) {
-            const msg = error.response?.data?.message || "Login gagal!";
-            console.error("Login error:", msg);
-            throw new Error(msg);
+            const message = error.response?.data?.message;
+            throw new Error(message);
         }
     };
 
@@ -74,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem("user");
+        removeToken();
     };
 
     return (

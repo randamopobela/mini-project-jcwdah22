@@ -14,7 +14,10 @@ import {
     ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext"; // ✅ ambil user login dari context
+import API from "@/lib/axiosInstance";
 
 const eventSchema = Yup.object().shape({
     title: Yup.string()
@@ -55,6 +58,7 @@ const eventSchema = Yup.object().shape({
     totalSlots: Yup.number()
         .min(1, "Minimal 1 slot")
         .required("Total slot harus diisi"),
+    eventPicture: Yup.string().nullable(),
 });
 
 const categories = [
@@ -69,14 +73,26 @@ const categories = [
 ];
 
 export default function CreateEventPage() {
-    const [eventImage, setEventImage] = useState<string | null>(null);
+    const [eventPicture, setEventPicture] = useState<string | null>(null);
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.push("/login");
+        }
+    }, [user, isLoading, router]);
+
+    const handleImageChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        setFieldValue: any
+    ) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setEventImage(reader.result as string);
+                setEventPicture(reader.result as string);
+                setFieldValue("eventPicture", reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -84,15 +100,43 @@ export default function CreateEventPage() {
 
     const handleCreateEvent = async (values: any) => {
         try {
+            const payload = {
+                ...values,
+                availableSlots: values.totalSlots,
+                status: "DRAFT",
+                organizerId: "USR001", // ✅ ambil dari user login
+            };
+
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const token = user.data.token;
+
+            console.log("Token:", token, payload);
+
+            await API.post("/myevent/create", payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            console.log("Payload event:", payload);
             toast.success("Event berhasil dibuat!");
-            console.log(values);
+            router.push("/dashboard");
         } catch (error) {
             toast.error("Gagal membuat event. Silakan coba lagi.");
         }
     };
 
+    if (isLoading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                Memuat...
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Header */}
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <Link
@@ -109,6 +153,7 @@ export default function CreateEventPage() {
                 </div>
             </div>
 
+            {/* Form */}
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                     <Formik
@@ -122,6 +167,7 @@ export default function CreateEventPage() {
                             price: 0,
                             isFree: false,
                             totalSlots: 100,
+                            eventPicture: "",
                         }}
                         validationSchema={eventSchema}
                         onSubmit={handleCreateEvent}
@@ -134,6 +180,7 @@ export default function CreateEventPage() {
                             setFieldValue,
                         }) => (
                             <Form className="space-y-8">
+                                {/* Informasi Event */}
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
                                         <FileText className="h-6 w-6 text-primary-600" />
@@ -141,6 +188,7 @@ export default function CreateEventPage() {
                                     </h2>
 
                                     <div className="space-y-6">
+                                        {/* Judul */}
                                         <div>
                                             <label
                                                 htmlFor="title"
@@ -167,6 +215,7 @@ export default function CreateEventPage() {
                                             />
                                         </div>
 
+                                        {/* Deskripsi */}
                                         <div>
                                             <label
                                                 htmlFor="description"
@@ -194,6 +243,7 @@ export default function CreateEventPage() {
                                             />
                                         </div>
 
+                                        {/* Kategori */}
                                         <div>
                                             <label
                                                 htmlFor="category"
@@ -218,34 +268,38 @@ export default function CreateEventPage() {
                                             </Field>
                                         </div>
 
+                                        {/* Gambar Event */}
                                         <div>
                                             <label
-                                                htmlFor="event-image"
+                                                htmlFor="eventPicture"
                                                 className="block text-sm font-medium text-gray-700 mb-2"
                                             >
                                                 Gambar Event
                                             </label>
                                             <div className="flex items-center space-x-4">
-                                                {eventImage && (
+                                                {eventPicture && (
                                                     <img
-                                                        src={eventImage}
+                                                        src={eventPicture}
                                                         alt="Event Preview"
-                                                        className="w-32 h-32 object-cover rounded-lg"
+                                                        className="w-32 h-32 object-cover rounded-lg border"
                                                     />
                                                 )}
                                                 <label className="flex items-center justify-center px-6 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
                                                     <ImageIcon className="h-5 w-5 text-gray-400 mr-2" />
                                                     <span className="text-gray-600">
-                                                        {eventImage
+                                                        {eventPicture
                                                             ? "Ganti Gambar"
                                                             : "Upload Gambar"}
                                                     </span>
                                                     <input
                                                         type="file"
-                                                        id="event-image"
+                                                        id="eventPicture"
                                                         accept="image/*"
-                                                        onChange={
-                                                            handleImageChange
+                                                        onChange={(e) =>
+                                                            handleImageChange(
+                                                                e,
+                                                                setFieldValue
+                                                            )
                                                         }
                                                         className="hidden"
                                                     />
@@ -255,6 +309,7 @@ export default function CreateEventPage() {
                                     </div>
                                 </div>
 
+                                {/* Lokasi & Waktu */}
                                 <div className="border-t border-gray-200 pt-8">
                                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
                                         <MapPin className="h-6 w-6 text-primary-600" />
@@ -351,6 +406,7 @@ export default function CreateEventPage() {
                                     </div>
                                 </div>
 
+                                {/* Harga & Kapasitas */}
                                 <div className="border-t border-gray-200 pt-8">
                                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
                                         <DollarSign className="h-6 w-6 text-primary-600" />
@@ -371,12 +427,11 @@ export default function CreateEventPage() {
                                                         "isFree",
                                                         e.target.checked
                                                     );
-                                                    if (e.target.checked) {
+                                                    if (e.target.checked)
                                                         setFieldValue(
                                                             "price",
                                                             0
                                                         );
-                                                    }
                                                 }}
                                             />
                                             <label
@@ -454,6 +509,7 @@ export default function CreateEventPage() {
                                     </div>
                                 </div>
 
+                                {/* Tombol Aksi */}
                                 <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                                     <Link
                                         href="/dashboard"
