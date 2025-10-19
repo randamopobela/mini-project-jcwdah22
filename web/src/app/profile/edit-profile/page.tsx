@@ -1,24 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Button, Label, TextInput } from "flowbite-react";
 import { toast } from "sonner";
-import { User, Mail, Phone, MapPin, ArrowLeft, Save } from "lucide-react";
+import {
+    User,
+    Mail,
+    Phone,
+    MapPin,
+    Save,
+    ArrowLeft,
+    ShieldOff,
+    KeyRound,
+} from "lucide-react";
+import API from "@/lib/axiosInstance"; // pastikan instance Axios kamu di sini
+import { decodeToken, removeToken, setToken } from "@/utils/auth";
 
-// 📋 Schema Validasi Yup
+// Schema Validasi
 const ProfileSchema = Yup.object().shape({
     firstName: Yup.string().required("Nama depan wajib diisi"),
-    lastName: Yup.string().required("Nama belakang wajib diisi"),
-    phone: Yup.string().matches(/^[0-9]+$/, "Nomor telepon tidak valid"),
+    lastName: Yup.string(),
+    phone: Yup.string().matches(/^[0-9]*$/, "Nomor telepon tidak valid"),
     address: Yup.string(),
 });
 
 export default function EditProfilePage() {
-    const { user, isLoading } = useAuth();
+    const { user, updateUser, logout, isLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
@@ -29,13 +40,51 @@ export default function EditProfilePage() {
 
     const handleSubmit = async (values: any, { setSubmitting }: any) => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // simulasi API
+            const response = await API.post("/user/update", values);
+
+            // Memperbarui token dari response.data.data ke dalam localStorage
+            const userToken = response.data?.data?.token;
+            removeToken();
+            setToken(userToken);
+
+            const userDecoded = decodeToken(userToken);
+            updateUser(userDecoded);
+
             toast.success("Profil berhasil diperbarui!");
-            setSubmitting(false);
+
             router.push("/profile");
         } catch (error: any) {
-            toast.error(error.message || "Gagal memperbarui profil.");
+            toast.error(
+                error.response?.data?.message || "Gagal memperbarui profil."
+            );
+        } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleDeactivate = async () => {
+        if (!user) {
+            toast.error("User tidak ditemukan.");
+            return;
+        }
+
+        try {
+            if (
+                confirm(
+                    "Apakah Anda yakin ingin menonaktifkan akun ini? Akun tidak bisa diaktifkan kembali."
+                )
+            ) {
+                await API.patch("/user/deactivate", {
+                    id: user.id,
+                });
+
+                toast.success("Akun berhasil dinonaktifkan.");
+                logout();
+            }
+        } catch (error: any) {
+            toast.error(
+                error.response?.data?.message || "Gagal menonaktifkan akun."
+            );
         }
     };
 
@@ -76,19 +125,45 @@ export default function EditProfilePage() {
                         </Button>
                     </div>
 
-                    {/* Formik Form */}
                     <Formik
                         initialValues={{
-                            firstName: user.firstName || "",
+                            email: user.email,
+                            userName: user.userName,
+                            firstName: user.firstName,
                             lastName: user.lastName || "",
                             phone: user.phone || "",
                             address: user.address || "",
+                            referralCode: user.referralCode,
+                            isActive: user.isActive,
+                            role: user.role,
                         }}
                         validationSchema={ProfileSchema}
                         onSubmit={handleSubmit}
                     >
                         {({ isSubmitting, errors, touched }) => (
                             <Form className="space-y-6">
+                                {/* Username */}
+                                <div>
+                                    <Label htmlFor="userName">Username</Label>
+                                    <Field
+                                        as={TextInput}
+                                        id="userName"
+                                        name="userName"
+                                        type="text"
+                                        icon={User}
+                                        color={
+                                            errors.userName && touched.userName
+                                                ? "failure"
+                                                : undefined
+                                        }
+                                    />
+                                    <ErrorMessage
+                                        name="userName"
+                                        component="p"
+                                        className="text-red-600 text-sm mt-1"
+                                    />
+                                </div>
+
                                 {/* Nama Depan & Belakang */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
@@ -125,12 +200,6 @@ export default function EditProfilePage() {
                                             name="lastName"
                                             type="text"
                                             icon={User}
-                                            color={
-                                                errors.lastName &&
-                                                touched.lastName
-                                                    ? "failure"
-                                                    : undefined
-                                            }
                                         />
                                         <ErrorMessage
                                             name="lastName"
@@ -155,7 +224,7 @@ export default function EditProfilePage() {
                                     </p>
                                 </div>
 
-                                {/* Nomor Telepon */}
+                                {/* Telepon */}
                                 <div>
                                     <Label htmlFor="phone">Nomor Telepon</Label>
                                     <Field
@@ -191,8 +260,34 @@ export default function EditProfilePage() {
                                     />
                                 </div>
 
-                                {/* Tombol Simpan */}
-                                <div className="flex justify-end">
+                                {/* Referral Code */}
+                                <div>
+                                    <Label htmlFor="referralCode">
+                                        Kode Referral
+                                    </Label>
+                                    <TextInput
+                                        id="referralCode"
+                                        type="text"
+                                        value={user.referralCode}
+                                        disabled
+                                        icon={KeyRound}
+                                    />
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Kode referral tidak dapat diubah
+                                    </p>
+                                </div>
+
+                                {/* Tombol Aksi */}
+                                <div className="flex justify-between items-center pt-4 border-t">
+                                    <Button
+                                        color="red"
+                                        onClick={handleDeactivate}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <ShieldOff className="w-4 h-4" />
+                                        Nonaktifkan Akun
+                                    </Button>
+
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting}

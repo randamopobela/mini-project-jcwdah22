@@ -21,15 +21,6 @@ class AuthController {
         }
     }
 
-    // async logout(req: Request, res: Response, next: NextFunction) {
-    //     try {
-    //         await authService.logout(req);
-    //         responseHandler(res, "Logout success");
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
     async forgotPassword(req: Request, res: Response, next: NextFunction) {
         try {
             const data = await authService.forgotPassword(req);
