@@ -1,6 +1,6 @@
 // src/services/events.service.ts
 
-import { EventCategory } from "../generated/prisma"; // <-- Impor enum dari Prisma Client
+import { EventCategory } from "@prisma/client"; // <-- Impor enum dari Prisma Client
 import { prisma } from "../config/config";
 
 // Tipe data untuk query agar lebih rapi
