@@ -274,6 +274,36 @@ class MyEventsController {
       next(new ErrorHandler(`Gagal membuat voucher: ${error.message}`, 500));
     }
   }
+
+  async getTransactionsByEvent(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const eventId = Number(req.params.id);
+      const organizerId = req.user!.id; // Tanda seru (!) karena middleware sudah memastikan req.user ada
+
+      // Panggil service untuk mengambil data transaksi
+      const transactions = await myEventService.findTransactionsByEvent(
+        eventId,
+        organizerId
+      );
+
+      res.status(200).json({
+        message: "Berhasil mengambil daftar transaksi.",
+        data: transactions,
+      });
+    } catch (error: any) {
+      // Teruskan error dari service (misal: event tidak ditemukan)
+      if (error instanceof ErrorHandler) {
+        return next(error);
+      }
+      next(
+        new ErrorHandler(`Gagal mengambil transaksi: ${error.message}`, 500)
+      );
+    }
+  }
 }
 
 export default new MyEventsController();

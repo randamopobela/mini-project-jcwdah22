@@ -8,9 +8,7 @@ import {
 } from "../interfaces/event.interface";
 
 class MyEventsService {
-  /**
-   * Membuat event baru berdasarkan skema database yang telah diperbarui.
-   */
+  //   membuat event baru
   async create(data: IEventData) {
     return prisma.event.create({
       data: {
@@ -31,9 +29,7 @@ class MyEventsService {
     });
   }
 
-  /**
-   * Mengambil semua event milik seorang organizer.
-   */
+  //   mengambil semua event milik seorang organizer
   async findAllByOrganizer(organizerId: string) {
     return prisma.event.findMany({
       where: { organizerId },
@@ -41,18 +37,14 @@ class MyEventsService {
     });
   }
 
-  /**
-   * Mengambil detail satu event milik seorang organizer.
-   */
+  //   mengambil satu event milik seorang organizer berdasarkan ID
   async findByIdAndOrganizer(id: number, organizerId: string) {
     return prisma.event.findFirst({
       where: { id, organizerId },
     });
   }
 
-  /**
-   * Mempublikasikan event milik seorang organizer.
-   */
+  //    Mempublikasikan event milik seorang organizer.
   async publish(id: number, organizerId: string) {
     // Validasi kepemilikan sebelum update
     const event = await this.findByIdAndOrganizer(id, organizerId);
@@ -68,6 +60,7 @@ class MyEventsService {
     });
   }
 
+  //    Mengedit event milik seorang organizer.
   async editmyEvent(id: number, organizerId: string, data: IEventUpdateData) {
     return prisma.$transaction(async (tx) => {
       // 1. Validasi kepemilikan event
@@ -120,18 +113,14 @@ class MyEventsService {
     });
   }
 
-  /**
-   * Menghapus event milik seorang organizer.
-   */
+  //   Menghapus event milik seorang organizer.
   async delete(id: number, organizerId: string) {
     return prisma.event.delete({
       where: { id, organizerId },
     });
   }
 
-  /**
-   * Membuat voucher untuk event milik seorang organizer.
-   */
+  //   membuat voucher untuk event milik seorang organizer.
   async createVoucher(
     eventId: number,
     organizerId: string,
@@ -155,6 +144,42 @@ class MyEventsService {
         ...data,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
+      },
+    });
+  }
+
+  //   mengambil semua transaksi untuk event milik seorang organizer.
+  async findTransactionsByEvent(eventId: number, organizerId: string) {
+    // Langkah 1: Validasi dulu apakah event ini benar milik organizer
+    const event = await prisma.event.findFirst({
+      where: { id: eventId, organizerId: organizerId },
+    });
+
+    // Jika event tidak ditemukan atau bukan milik organizer ini, lempar error
+    if (!event) {
+      throw new ErrorHandler(
+        "Event tidak ditemukan atau Anda tidak memiliki akses.",
+        404
+      );
+    }
+
+    // Langkah 2: Jika valid, ambil semua transaksinya
+    return prisma.transaction.findMany({
+      where: {
+        eventId: eventId,
+      },
+      include: {
+        // Sertakan data user agar bisa menampilkan nama pembeli di frontend
+        user: {
+          select: {
+            id: true,
+            userName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc", // Tampilkan transaksi yang paling baru di atas
       },
     });
   }

@@ -16,6 +16,8 @@ export const myeventRouter = () => {
 
   router.get("/all", myeventController.getAllmyEvents);
 
+  router.get("/:id/transactions", myeventController.getTransactionsByEvent);
+
   router.get("/:id", myeventController.getMyEventById);
 
   router.patch("/:id/publish", myeventController.publishmyEvent);
