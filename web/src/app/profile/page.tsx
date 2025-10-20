@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { Button } from "flowbite-react";
+import { Button, FileInput, Spinner, Toast, Modal } from "flowbite-react";
 import {
     User,
     Mail,
@@ -13,28 +13,106 @@ import {
     Shield,
     Gift,
     Calendar,
-    LogOut,
     Trophy,
     Settings,
+    Camera,
+    CheckCircle2,
+    XCircle,
+    Upload,
+    RotateCcw,
 } from "lucide-react";
+import API from "@/lib/axiosInstance";
+import { decodeToken, removeToken, setToken } from "@/utils/auth";
 
 export default function ProfilePage() {
-    const { user, isLoading, logout } = useAuth();
+    const { user, updateUser, isLoading } = useAuth();
     const router = useRouter();
 
+    const [preview, setPreview] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
-        if (!isLoading && !user) {
-            router.push("/login");
-        }
+        if (!isLoading && !user) router.push("/login");
     }, [user, isLoading, router]);
 
     if (isLoading || !user) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                Memuat...
+                <Spinner size="xl" />
             </div>
         );
     }
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setSelectedFile(file);
+        setPreview(URL.createObjectURL(file));
+        setOpenModal(true); // langsung buka modal preview
+    };
+
+    const handleCancelPreview = () => {
+        setSelectedFile(null);
+        setPreview(null);
+        setOpenModal(false);
+
+        //reset value input file
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const handleUpload = async () => {
+        if (!selectedFile) return;
+        const formData = new FormData();
+        formData.append("profilePicture", selectedFile);
+
+        try {
+            setUploading(true);
+            setError(false);
+            setSuccess(false);
+
+            const response = await API.post("/user/profile-picture", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            // perbarui token
+            const userToken = response.data?.data?.token;
+            removeToken();
+            setToken(userToken);
+
+            // perbarui data user
+            const userDecoded = decodeToken(userToken);
+            updateUser(userDecoded);
+
+            setUploading(false);
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 3000);
+
+            // reset modal
+            setOpenModal(false);
+            setSelectedFile(null);
+            setPreview(null);
+
+            //reset value input file
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        } catch (err) {
+            console.error(err);
+            setUploading(false);
+            setError(true);
+            setTimeout(() => setError(false), 3000);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -49,38 +127,52 @@ export default function ProfilePage() {
             </div>
 
             <main className="max-w-5xl mx-auto px-4 py-12">
-                {/* Profil Card */}
                 <div className="bg-white rounded-2xl shadow-md p-8 mb-10">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-                        <div className="relative">
+                        {/* FOTO PROFIL */}
+                        <div className="relative flex flex-col items-center">
                             <img
                                 src={
-                                    user.profilePicture || "/images/avatar.png"
+                                    user.profilePicture
+                                        ? `${process.env.NEXT_PUBLIC_API_URL}${user.profilePicture}`
+                                        : "/default-avatar.png"
                                 }
                                 alt="Profile Avatar"
                                 className="w-32 h-32 rounded-full object-cover border-4 border-blue-100 shadow-md"
                             />
-                            <button className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full">
+
+                            <Button
+                                color="blue"
+                                size="xs"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="absolute bottom-0 right-0 flex items-center gap-1"
+                            >
+                                <Camera className="w-4 h-4" />
                                 Ganti Foto
-                            </button>
+                            </Button>
+
+                            <FileInput
+                                ref={fileInputRef}
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                                className="hidden"
+                            />
                         </div>
 
+                        {/* DETAIL PROFIL */}
                         <div className="flex-1">
                             <h2 className="text-3xl font-bold text-gray-900 mb-1">
                                 {user.firstName} {user.lastName}
                             </h2>
                             <p className="text-gray-600 mb-4 flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-blue-500" />{" "}
+                                <Mail className="w-4 h-4 text-blue-500" />
                                 {user.email}
                             </p>
 
                             <div className="flex flex-wrap gap-3">
                                 <Link href="/profile/edit-profile">
-                                    <Button
-                                        color="gray"
-                                        className="px-5 py-2.5 font-semibold"
-                                    >
-                                        <Settings className="w-4 h-4 mr-2" />{" "}
+                                    <Button color="gray">
+                                        <Settings className="w-4 h-4 mr-2" />
                                         Edit Profil
                                     </Button>
                                 </Link>
@@ -88,11 +180,35 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Divider */}
+                    {/* FEEDBACK */}
+                    <div className="mt-4">
+                        {success && (
+                            <Toast>
+                                <CheckCircle2 className="text-green-600 w-5 h-5" />
+                                <div className="pl-2 text-sm font-medium text-green-700">
+                                    Foto berhasil diperbarui!
+                                </div>
+                            </Toast>
+                        )}
+                        {error && (
+                            <Toast>
+                                <XCircle className="text-red-600 w-5 h-5" />
+                                <div className="pl-2 text-sm font-medium text-red-700">
+                                    Gagal mengunggah foto.
+                                </div>
+                            </Toast>
+                        )}
+                    </div>
+
                     <div className="border-t border-gray-200 my-8"></div>
 
-                    {/* Informasi Pribadi */}
+                    {/* INFO USER */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InfoCard
+                            icon={<User className="w-5 h-5 text-blue-600" />}
+                            label="Username"
+                            value={user.userName}
+                        />
                         <InfoCard
                             icon={<Phone className="w-5 h-5 text-blue-600" />}
                             label="Nomor Telepon"
@@ -106,21 +222,27 @@ export default function ProfilePage() {
                         <InfoCard
                             icon={<Shield className="w-5 h-5 text-blue-600" />}
                             label="Role Akun"
-                            value={
-                                user.role === "ORGANIZER"
-                                    ? "Organizer"
-                                    : "Customer"
-                            }
+                            value={user.role}
                         />
                         <InfoCard
                             icon={<Gift className="w-5 h-5 text-blue-600" />}
                             label="Kode Referral"
                             value={user.referralCode || "-"}
                         />
+                        <InfoCard
+                            icon={
+                                <Calendar className="w-5 h-5 text-blue-600" />
+                            }
+                            label="Bergabung Sejak"
+                            value={new Date(user.createdAt).toLocaleDateString(
+                                "id-ID",
+                                { year: "numeric", month: "short" }
+                            )}
+                        />
                     </div>
                 </div>
 
-                {/* Statistik Pengguna */}
+                {/* Statistik */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <StatCard
                         icon={<Calendar className="w-6 h-6 text-blue-600" />}
@@ -134,8 +256,8 @@ export default function ProfilePage() {
                     />
                     <StatCard
                         icon={<User className="w-6 h-6 text-green-600" />}
-                        title="Bergabung Sejak"
-                        value="Jan 2024"
+                        title="Status Akun"
+                        value={user.isActive ? "Aktif" : "Nonaktif"}
                     />
                 </div>
 
@@ -173,11 +295,67 @@ export default function ProfilePage() {
                     </ul>
                 </div>
             </main>
+
+            {/* 🪟 Modal Preview Foto */}
+            <Modal
+                show={openModal}
+                size="sm"
+                onClose={handleCancelPreview}
+                popup
+            >
+                <div className="p-6 text-center">
+                    {preview ? (
+                        <img
+                            src={preview}
+                            alt="Preview"
+                            className="w-40 h-40 rounded-full mx-auto mb-4 object-cover border-4 border-blue-100"
+                        />
+                    ) : (
+                        <div className="h-40 flex items-center justify-center text-gray-400">
+                            Tidak ada gambar
+                        </div>
+                    )}
+
+                    <div className="flex justify-center gap-2 mt-3">
+                        <Button
+                            color="gray"
+                            size="xs"
+                            onClick={handleCancelPreview}
+                        >
+                            <RotateCcw className="w-4 h-4 mr-1" /> Kembali
+                        </Button>
+                        <Button
+                            color="light"
+                            size="xs"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Camera className="w-4 h-4 mr-1" /> Ganti Foto
+                        </Button>
+                        <Button
+                            color="blue"
+                            size="xs"
+                            onClick={handleUpload}
+                            disabled={uploading}
+                        >
+                            {uploading ? (
+                                <>
+                                    <Spinner size="sm" />{" "}
+                                    <span className="ml-2">Mengunggah...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Upload className="w-4 h-4 mr-1" /> Upload
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
 
-/* 🔹 Komponen Reusable Kecil */
+/* Komponen kecil */
 function InfoCard({
     icon,
     label,

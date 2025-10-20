@@ -68,3 +68,15 @@ export const getUserForResetPassword = async (email: string) => {
         },
     });
 };
+
+export const getUserForDeactivate = async (id: string) => {
+    return await prisma.user.findUnique({
+        select: {
+            id: true,
+            isActive: true,
+        },
+        where: {
+            id,
+        },
+    });
+};

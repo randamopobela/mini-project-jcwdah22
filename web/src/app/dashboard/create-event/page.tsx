@@ -89,10 +89,12 @@ export default function CreateEventPage() {
     ) => {
         const file = e.target.files?.[0];
         if (file) {
+            setFieldValue("eventPicture", file); // simpan file asli
+
+            // hanya untuk preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setEventPicture(reader.result as string);
-                setFieldValue("eventPicture", reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -100,28 +102,37 @@ export default function CreateEventPage() {
 
     const handleCreateEvent = async (values: any) => {
         try {
-            const payload = {
-                ...values,
-                availableSlots: values.totalSlots,
-                status: "DRAFT",
-                organizerId: "USR001", // ✅ ambil dari user login
-            };
+            const formData = new FormData();
 
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const token = user.data.token;
+            // isi field string / number
+            formData.append("title", values.title);
+            formData.append("description", values.description);
+            formData.append("category", values.category);
+            formData.append("location", values.location);
+            formData.append("startDate", values.startDate);
+            formData.append("endDate", values.endDate);
+            formData.append("price", values.price.toString());
+            formData.append("isFree", values.isFree.toString());
+            formData.append("totalSlots", values.totalSlots.toString());
+            formData.append("availableSlots", values.totalSlots.toString());
+            formData.append("organizerId", user?.id || "");
 
-            console.log("Token:", token, payload);
+            // tambahkan gambar jika ada
+            if (values.eventPicture instanceof File) {
+                formData.append("eventPicture", values.eventPicture);
+            }
 
-            await API.post("/myevent/create", payload, {
+            await API.post("/myevent/create", formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 
-            console.log("Payload event:", payload);
             toast.success("Event berhasil dibuat!");
             router.push("/dashboard");
-        } catch (error) {
+        } catch (error: any) {
+            console.error(error);
             toast.error("Gagal membuat event. Silakan coba lagi.");
         }
     };

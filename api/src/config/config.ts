@@ -11,7 +11,7 @@ export const PORT = process.env.PORT || 8000;
 
 export const prisma = new PrismaClient();
 
-export const jwt_secret = process.env.JWT_SECRET || "";
+export const jwtSecret = process.env.JWT_SECRET || "";
 
 export const jwt_reset_secret = process.env.JWT_RESET_SECRET || "";
 

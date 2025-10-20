@@ -1,3 +1,6 @@
+import { TUser } from "@/types/user.type";
+import { jwtDecode } from "jwt-decode";
+
 export const getToken = (): string | null => {
     return localStorage.getItem("token");
 };
@@ -8,4 +11,8 @@ export const setToken = (token: string) => {
 
 export const removeToken = () => {
     localStorage.removeItem("token");
+};
+
+export const decodeToken = (token: string): TUser => {
+    return jwtDecode(token);
 };

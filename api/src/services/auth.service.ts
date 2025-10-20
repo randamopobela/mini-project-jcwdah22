@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { PointsLogType, Prisma } from "../generated/prisma";
-import { jwt_reset_secret, jwt_secret, prisma } from "../config/config";
+import { PointsLogType, Prisma } from "@prisma/client";
+import { jwt_reset_secret, jwtSecret, prisma } from "../config/config";
 import { compare } from "bcrypt";
 import { ErrorHandler } from "../helpers/response.handler";
 import {

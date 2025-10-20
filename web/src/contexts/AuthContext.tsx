@@ -10,11 +10,12 @@ import {
 import { TUser } from "@/types/user.type";
 import API from "@/lib/axiosInstance";
 import { jwtDecode } from "jwt-decode";
-import { getToken, removeToken, setToken } from "@/utils/auth";
+import { decodeToken, getToken, removeToken, setToken } from "@/utils/auth";
 
 interface AuthContextType {
     user: TUser | null;
     login: (email: string, password: string) => Promise<void>;
+    updateUser: (newUser: TUser) => void;
     // register: (data: UserRegister) => Promise<void>;
     logout: () => void;
     isLoading: boolean;
@@ -27,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Mengambil data user dari localStorage setelah refresh halaman, jika ada
+        // Mengambil data user dari localStorage setelah refresh halaman jika ada,
         // agar tidak perlu login lagi.
         const token = getToken();
         if (token) {
@@ -54,13 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setToken(userToken);
 
             // Mengambil data user dari token
-            const userDecoded: TUser = jwtDecode(userToken);
+            const userDecoded = decodeToken(userToken);
             setUser(userDecoded);
         } catch (error: any) {
             const message = error.response?.data?.message;
             throw new Error(message);
         }
     };
+
+    const updateUser = (newUser: TUser) => setUser(newUser);
 
     // const register = async (data: UserRegister) => {
     //     const mockUser: User = {
@@ -88,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+        <AuthContext.Provider
+            value={{ user, login, updateUser, logout, isLoading }}
+        >
             {children}
         </AuthContext.Provider>
     );
