@@ -16,6 +16,7 @@ export const myeventRouter = () => {
 
   router.get("/all", myeventController.getAllmyEvents);
 
+  // new route for sales report
   router.get("/:id/sales-report", myeventController.getSalesReport);
 
   router.get("/:id/attendees", myeventController.getAttendeesByEvent);
