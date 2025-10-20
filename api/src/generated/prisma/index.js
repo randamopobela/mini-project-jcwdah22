@@ -367,7 +367,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\webdev\\project\\mini-project-jcwdah22\\api\\src\\generated\\prisma",
+      "value": "C:\\webdev\\project\\eventManajemen putra\\mini-project-jcwdah22\\api\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -381,7 +381,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\webdev\\project\\mini-project-jcwdah22\\api\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\webdev\\project\\eventManajemen putra\\mini-project-jcwdah22\\api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
