@@ -279,6 +279,7 @@ export default function EditProfilePage() {
 
                                 {/* Tombol Aksi */}
                                 <div className="flex justify-between items-center pt-4 border-t">
+                                    {/* Tombol Nonaktifkan Akun */}
                                     <Button
                                         color="red"
                                         onClick={handleDeactivate}
@@ -288,6 +289,21 @@ export default function EditProfilePage() {
                                         Nonaktifkan Akun
                                     </Button>
 
+                                    {/* Tombol Reset Password */}
+                                    <Button
+                                        color="gray"
+                                        onClick={() =>
+                                            router.push(
+                                                "/profile/edit-profile/change-password"
+                                            )
+                                        }
+                                        className="flex items-center gap-2"
+                                    >
+                                        <KeyRound className="w-4 h-4" />
+                                        Reset Password
+                                    </Button>
+
+                                    {/* Tombol Simpan */}
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting}

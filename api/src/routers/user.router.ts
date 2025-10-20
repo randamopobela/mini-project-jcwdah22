@@ -7,6 +7,7 @@ export const userRouter = () => {
     const router = Router();
 
     router.post("/update", userController.update);
+    router.post("/change-password", verifyToken, userController.changePassword);
     router.post(
         "/profile-picture",
         verifyToken,

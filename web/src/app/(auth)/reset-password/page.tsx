@@ -64,19 +64,10 @@ export default function ResetPasswordPage() {
                 "Password berhasil direset! Silakan login dengan password baru."
             );
 
-            console.log("✅ Reset Success:", data);
             router.push("/login"); // redirect ke login setelah sukses
-
-            console.log(values);
         } catch (error: any) {
-            const message =
-                error.response?.data?.message ||
-                "Terjadi kesalahan saat login.";
-            console.log("Error forgot-password dari backend:", message);
-
-            toast.error(
-                error.message || "Gagal reset password. Silakan coba lagi."
-            );
+            const message = error.response?.data?.message;
+            toast.error(`${error.message}. ${message}`);
         }
     };
 

@@ -1,5 +1,5 @@
 import { Request, NextFunction } from "express";
-import { prisma } from "../config/config";
+import { jwtSecret, prisma } from "../config/config";
 import { getUserByEmail, getUserForDeactivate } from "../helpers/user.prisma";
 import {
     IUser,
@@ -7,6 +7,10 @@ import {
     IUserLogin,
 } from "../interfaces/user.interface";
 import { generateJWT } from "../helpers/jwt";
+import { compare } from "bcrypt";
+import { ErrorHandler } from "../helpers/response.handler";
+import { hashedPassword } from "../helpers/bcrypt";
+import { sign } from "jsonwebtoken";
 
 class userService {
     async update(req: Request) {
@@ -29,6 +33,28 @@ class userService {
         const updatedUser = (await getUserByEmail(email)) as IUserLogin;
         delete updatedUser.password;
         const token = generateJWT(updatedUser);
+
+        return { token };
+    }
+
+    async changePassword(req: Request) {
+        const { email, currentPassword, newPassword } = req.body;
+
+        const user = (await getUserByEmail(email)) as IUserLogin;
+
+        if (!(await compare(currentPassword, user.password as string))) {
+            throw new ErrorHandler("Password is incorrect.", 401);
+        }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { password: await hashedPassword(newPassword) },
+        });
+
+        delete user.password;
+        const token = sign(user, jwtSecret, {
+            expiresIn: "30m",
+        });
 
         return { token };
     }

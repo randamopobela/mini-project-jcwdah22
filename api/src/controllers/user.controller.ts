@@ -12,6 +12,15 @@ class UserController {
         }
     }
 
+    async changePassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await userService.changePassword(req);
+            responseHandler(res, "Change password successfully.", data);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async changeProfilePicture(
         req: Request,
         res: Response,
