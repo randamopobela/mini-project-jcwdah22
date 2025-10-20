@@ -304,6 +304,133 @@ class MyEventsController {
       );
     }
   }
+
+  async acceptTransaction(req: Request, res: Response, next: NextFunction) {
+    try {
+      const transactionId = Number(req.params.transactionId);
+      const organizerId = req.user!.id;
+
+      const updatedTransaction = await myEventService.acceptTransaction(
+        transactionId,
+        organizerId
+      );
+
+      res.status(200).json({
+        message: "Transaksi berhasil diterima dan tiket telah dibuat.",
+        data: updatedTransaction,
+      });
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return next(error);
+      }
+      next(new ErrorHandler(`Gagal menerima transaksi: ${error.message}`, 500));
+    }
+  }
+
+  async rejectTransaction(req: Request, res: Response, next: NextFunction) {
+    try {
+      const transactionId = Number(req.params.transactionId);
+      const organizerId = req.user!.id;
+
+      const updatedTransaction = await myEventService.rejectTransaction(
+        transactionId,
+        organizerId
+      );
+
+      res.status(200).json({
+        message:
+          "Transaksi berhasil ditolak dan sumber daya telah dikembalikan.",
+        data: updatedTransaction,
+      });
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return next(error);
+      }
+      next(new ErrorHandler(`Gagal menolak transaksi: ${error.message}`, 500));
+    }
+  }
+
+  async getDashboardStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const eventId = Number(req.params.id);
+      const organizerId = req.user!.id;
+
+      const stats = await myEventService.getDashboardStats(
+        eventId,
+        organizerId
+      );
+
+      res.status(200).json({
+        message: "Berhasil mengambil statistik dashboard.",
+        data: stats,
+      });
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return next(error);
+      }
+      next(
+        new ErrorHandler(`Gagal mengambil statistik: ${error.message}`, 500)
+      );
+    }
+  }
+
+  async getAttendeesByEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const eventId = Number(req.params.id);
+      const organizerId = req.user!.id;
+
+      const attendees = await myEventService.findAttendeesByEvent(
+        eventId,
+        organizerId
+      );
+
+      res.status(200).json({
+        message: "Berhasil mengambil daftar peserta.",
+        data: attendees,
+      });
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return next(error);
+      }
+      next(
+        new ErrorHandler(
+          `Gagal mengambil daftar peserta: ${error.message}`,
+          500
+        )
+      );
+    }
+  }
+
+  async getSalesReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const eventId = Number(req.params.id);
+      const organizerId = req.user!.id;
+
+      // Ambil periode dari query string, default-nya 'daily'
+      const period = (req.query.period as string) || "daily";
+
+      const report = await myEventService.getSalesReport(
+        eventId,
+        organizerId,
+        period
+      );
+
+      res.status(200).json({
+        message: "Berhasil mengambil laporan penjualan.",
+        data: report,
+      });
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return next(error);
+      }
+      next(
+        new ErrorHandler(
+          `Gagal mengambil laporan penjualan: ${error.message}`,
+          500
+        )
+      );
+    }
+  }
 }
 
 export default new MyEventsController();
