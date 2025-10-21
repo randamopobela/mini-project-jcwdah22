@@ -58,7 +58,7 @@ const eventSchema = Yup.object().shape({
     totalSlots: Yup.number()
         .min(1, "Minimal 1 slot")
         .required("Total slot harus diisi"),
-    eventPicture: Yup.string().nullable(),
+    eventPicture: Yup.mixed().nullable(),
 });
 
 const categories = [
@@ -74,6 +74,8 @@ const categories = [
 
 export default function CreateEventPage() {
     const [eventPicture, setEventPicture] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
     const { user, isLoading } = useAuth();
     const router = useRouter();
 
@@ -89,9 +91,10 @@ export default function CreateEventPage() {
     ) => {
         const file = e.target.files?.[0];
         if (file) {
-            setFieldValue("eventPicture", file); // simpan file asli
+            setSelectedFile(file); // simpan di state, bukan di Formik
+            setFieldValue("eventPicture", file.name); // optional: hanya untuk menampilkan nama file di Formik
 
-            // hanya untuk preview
+            // preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setEventPicture(reader.result as string);
@@ -118,13 +121,16 @@ export default function CreateEventPage() {
             formData.append("organizerId", user?.id || "");
 
             // tambahkan gambar jika ada
-            if (values.eventPicture instanceof File) {
-                formData.append("eventPicture", values.eventPicture);
+            if (selectedFile) {
+                formData.append("eventPicture", selectedFile); //pastikan field cocok dengan .single("eventPicture")
+            }
+
+            for (const [key, val] of formData.entries()) {
+                console.log(`${key}:`, val);
             }
 
             await API.post("/myevent/create", formData, {
                 headers: {
-                    "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
@@ -133,7 +139,7 @@ export default function CreateEventPage() {
             router.push("/dashboard");
         } catch (error: any) {
             console.error(error);
-            toast.error("Gagal membuat event. Silakan coba lagi.");
+            toast.error("Gagal membuat event. Silakan coba lagi.", error);
         }
     };
 

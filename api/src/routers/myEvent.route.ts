@@ -10,7 +10,8 @@ export const myeventRouter = () => {
 
     router.post(
         "/create",
-        uploader("IMG", "/images").single("file"),
+        uploader("IMG", "/images").single("eventPicture"),
+        verifyToken,
         myeventController.createEvent
     );
 
@@ -22,7 +23,7 @@ export const myeventRouter = () => {
 
     router.patch(
         "/:id",
-        uploader("IMG", "/images").single("file"),
+        uploader("IMG", "/images").single("eventPicture"),
         myeventController.editmyEvent
     );
 
