@@ -1,11 +1,7 @@
 import { Request, NextFunction } from "express";
 import { jwtSecret, prisma } from "../config/config";
 import { getUserByEmail, getUserForDeactivate } from "../helpers/user.prisma";
-import {
-    IUser,
-    IUserDeactivate,
-    IUserLogin,
-} from "../interfaces/user.interface";
+import { IUserDeactivate, IUserLogin } from "../interfaces/user.interface";
 import { generateJWT } from "../helpers/jwt";
 import { compare } from "bcrypt";
 import { ErrorHandler } from "../helpers/response.handler";
@@ -14,23 +10,24 @@ import { sign } from "jsonwebtoken";
 
 class userService {
     async update(req: Request) {
-        const { email, userName, firstName, lastName, phone, address } =
-            req.body;
+        if (!req.user) {
+            throw new ErrorHandler("User not authenticated.", 401);
+        }
 
-        const user = (await getUserByEmail(email)) as IUser;
+        const { userName, firstName, lastName, phone, address } = req.body;
 
         await prisma.user.update({
-            where: { id: user.id },
+            where: { id: req.user.id },
             data: {
-                userName: userName,
-                firstName: firstName,
-                lastName: lastName,
-                phone: phone,
-                address: address,
+                userName,
+                firstName,
+                lastName,
+                phone,
+                address,
             },
         });
 
-        const updatedUser = (await getUserByEmail(email)) as IUserLogin;
+        const updatedUser = (await getUserByEmail(req.user.email)) as IUserLogin;
         delete updatedUser.password;
         const token = generateJWT(updatedUser);
 
@@ -82,13 +79,21 @@ class userService {
     }
 
     async deactivate(req: Request) {
-        const { id } = req.body;
-        const user = (await getUserForDeactivate(id)) as IUserDeactivate;
+        if (!req.user) {
+            throw new ErrorHandler("User not authenticated.", 401);
+        }
+
+        const user = (await getUserForDeactivate(req.user.id)) as IUserDeactivate;
+        if (!user) {
+            throw new ErrorHandler("User not found.", 404);
+        }
 
         await prisma.user.update({
             where: { id: user.id },
             data: { isActive: false },
         });
+
+        return { success: true };
     }
 }
 

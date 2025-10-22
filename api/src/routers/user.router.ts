@@ -6,7 +6,7 @@ import { verifyToken } from "../middlewares/auth.middleware";
 export const userRouter = () => {
     const router = Router();
 
-    router.post("/update", userController.update);
+    router.post("/update", verifyToken, userController.update);
     router.post("/change-password", verifyToken, userController.changePassword);
     router.post(
         "/profile-picture",
@@ -14,7 +14,7 @@ export const userRouter = () => {
         uploader("PROFILE", "/images/profile").single("profilePicture"),
         userController.changeProfilePicture.bind(userController)
     );
-    router.patch("/deactivate", userController.deactivate);
+    router.patch("/deactivate", verifyToken, userController.deactivate);
 
     return router;
 };

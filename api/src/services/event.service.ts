@@ -15,30 +15,34 @@ class eventService {
                 endDate,
                 price,
                 totalSlots,
-                organizer, //sebelumnya organizerId
+                organizerId,
             } = req.body;
 
-            // const organizer = await prisma.user.findUnique({
-            //     where: { id: organizerId },
-            // });
-
-            if (organizer) {
-                await prisma.event.create({
-                    data: {
-                        title,
-                        description,
-                        category,
-                        eventPicture: eventPicture ?? null,
-                        location,
-                        startDate: new Date(startDate),
-                        endDate: new Date(endDate) ?? startDate,
-                        price,
-                        availableSlots: totalSlots,
-                        totalSlots,
-                        organizer,
-                    },
-                });
+            if (!organizerId) {
+                throw new ErrorHandler("Organizer ID is required", 400);
             }
+
+            const event = await prisma.event.create({
+                data: {
+                    title,
+                    description,
+                    category,
+                    eventPicture: eventPicture ?? null,
+                    location,
+                    startDate: new Date(startDate),
+                    endDate: endDate ? new Date(endDate) : new Date(startDate),
+                    price,
+                    availableSlots: totalSlots,
+                    totalSlots,
+                    organizer: {
+                        connect: {
+                            id: organizerId,
+                        },
+                    },
+                },
+            });
+
+            return event;
         } catch (error) {
             next(error);
         }
