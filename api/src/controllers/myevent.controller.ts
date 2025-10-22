@@ -89,7 +89,6 @@ class MyEventsController {
 
     async getAllmyEvents(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log("req.user di controller: ", req.user);
             if (!req.user?.id)
                 return next(
                     new ErrorHandler("User tidak terautentikasi.", 401)

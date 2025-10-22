@@ -32,7 +32,6 @@ class MyEventsService {
 
     //   mengambil semua event milik seorang organizer
     async findAllByOrganizer(organizerId: string) {
-        console.log("organizerId: ", organizerId);
         return prisma.event.findMany({
             where: { organizerId },
             select: {
@@ -44,6 +43,7 @@ class MyEventsService {
                 status: true,
                 totalSlots: true,
                 availableSlots: true,
+                price: true,
                 eventPicture: true,
             },
             orderBy: { createdAt: "desc" },
@@ -54,6 +54,23 @@ class MyEventsService {
     async findByIdAndOrganizer(id: number, organizerId: string) {
         return prisma.event.findFirst({
             where: { id, organizerId },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                category: true,
+                location: true,
+                startDate: true,
+                endDate: true,
+                status: true,
+                totalSlots: true,
+                availableSlots: true,
+                price: true,
+                eventPicture: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+            orderBy: { createdAt: "desc" },
         });
     }
 

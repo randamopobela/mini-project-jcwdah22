@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/axiosInstance";
+import { useAuth } from "@/contexts/AuthContext";
 
 const statusStyles = {
     PUBLISHED: "bg-green-100 text-green-800",
@@ -25,7 +26,12 @@ const statusStyles = {
 
 export default function DashboardPage() {
     const [events, setEvents] = useState<any[]>([]);
+    const { user, isLoading } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        if (!isLoading && !user) router.push("/login");
+    }, [user, isLoading, router]);
 
     useEffect(() => {
         const fetchMyEvents = async () => {
@@ -38,7 +44,6 @@ export default function DashboardPage() {
                     },
                 });
                 setEvents(response.data.data); // karena backend kirim { message, data: events }
-                console.log(response.data);
             } catch (err) {
                 console.error(err);
             }
@@ -144,6 +149,15 @@ export default function DashboardPage() {
                                         Status
                                     </th>
                                     <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                                        Total Kuota
+                                    </th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                                        Tersisa
+                                    </th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                                        Harga
+                                    </th>
+                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
                                         Aksi
                                     </th>
                                 </tr>
@@ -188,6 +202,20 @@ export default function DashboardPage() {
                                             >
                                                 {event.status}
                                             </span>
+                                        </td>
+
+                                        <td className="py-4 px-4 text-gray-700">
+                                            {event.totalSlots.toLocaleString()}
+                                        </td>
+
+                                        <td className="py-4 px-4 text-gray-700">
+                                            {event.availableSlots.toLocaleString()}
+                                        </td>
+
+                                        <td className="py-4 px-4 text-gray-700">
+                                            {event.price && event.price > 0
+                                                ? `Rp ${event.price.toLocaleString()}`
+                                                : "Gratis"}
                                         </td>
 
                                         <td className="py-4 px-4">
