@@ -32,6 +32,7 @@ class MyEventsService {
 
     //   mengambil semua event milik seorang organizer
     async findAllByOrganizer(organizerId: string) {
+        console.log("organizerId: ", organizerId);
         return prisma.event.findMany({
             where: { organizerId },
             select: {

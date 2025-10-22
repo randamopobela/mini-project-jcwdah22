@@ -1,51 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
     Calendar,
     Plus,
-    Users,
-    DollarSign,
-    TrendingUp,
     Eye,
     Edit,
     Trash2,
-    MoreVertical,
+    TrendingUp,
+    DollarSign,
+    Users,
 } from "lucide-react";
-import { useState } from "react";
-
-const myEvents = [
-    {
-        id: 1,
-        title: "Jakarta Marathon 2025",
-        date: "2025-11-15",
-        location: "Jakarta",
-        status: "PUBLISHED",
-        participants: 1500,
-        revenue: "Rp 375.000.000",
-        image: "https://images.pexels.com/photos/2524739/pexels-photo-2524739.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-    {
-        id: 2,
-        title: "Bali Sunrise Run",
-        date: "2025-12-01",
-        location: "Bali",
-        status: "PUBLISHED",
-        participants: 800,
-        revenue: "Rp 120.000.000",
-        image: "https://images.pexels.com/photos/2524738/pexels-photo-2524738.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-    {
-        id: 3,
-        title: "Bandung Trail Challenge",
-        date: "2025-11-20",
-        location: "Bandung",
-        status: "DRAFT",
-        participants: 0,
-        revenue: "Rp 0",
-        image: "https://images.pexels.com/photos/2524734/pexels-photo-2524734.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-];
+import { useRouter } from "next/navigation";
+import API from "@/lib/axiosInstance";
 
 const statusStyles = {
     PUBLISHED: "bg-green-100 text-green-800",
@@ -56,12 +24,35 @@ const statusStyles = {
 };
 
 export default function DashboardPage() {
-    const [activeMenu, setActiveMenu] = useState<number | null>(null);
+    const [events, setEvents] = useState<any[]>([]);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchMyEvents = async () => {
+            try {
+                const response = await API.get("/myevent/all", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
+                setEvents(response.data.data); // karena backend kirim { message, data: events }
+                console.log(response.data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchMyEvents();
+    }, []);
+
+    console.log("isi dari fetch event: ", typeof events, events);
 
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto px-4">
                     <h1 className="text-4xl font-bold mb-2">
                         Dashboard Organizer
                     </h1>
@@ -71,7 +62,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-md p-6">
                         <div className="flex items-center justify-between mb-4">
@@ -125,7 +116,6 @@ export default function DashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">+23%</p>
                     </div>
                 </div>
-
                 <div className="bg-white rounded-xl shadow-md p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold text-gray-900">
@@ -154,18 +144,12 @@ export default function DashboardPage() {
                                         Status
                                     </th>
                                     <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Peserta
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Revenue
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
                                         Aksi
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {myEvents.map((event) => (
+                                {events.map((event) => (
                                     <tr
                                         key={event.id}
                                         className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -173,7 +157,7 @@ export default function DashboardPage() {
                                         <td className="py-4 px-4">
                                             <div className="flex items-center space-x-3">
                                                 <img
-                                                    src={event.image}
+                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${event.eventPicture}`}
                                                     alt={event.title}
                                                     className="w-12 h-12 rounded-lg object-cover"
                                                 />
@@ -187,15 +171,13 @@ export default function DashboardPage() {
                                                 </div>
                                             </div>
                                         </td>
+
                                         <td className="py-4 px-4 text-gray-700">
                                             {new Date(
-                                                event.date
-                                            ).toLocaleDateString("id-ID", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                            })}
+                                                event.startDate
+                                            ).toLocaleDateString("id-ID")}
                                         </td>
+
                                         <td className="py-4 px-4">
                                             <span
                                                 className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -207,21 +189,23 @@ export default function DashboardPage() {
                                                 {event.status}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-4 text-gray-700">
-                                            {event.participants}
-                                        </td>
-                                        <td className="py-4 px-4 text-gray-700">
-                                            {event.revenue}
-                                        </td>
+
                                         <td className="py-4 px-4">
                                             <div className="flex items-center space-x-2">
-                                                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                                <button
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                                    onClick={() =>
+                                                        router.push(
+                                                            `/dashboard/event/${event.id}`
+                                                        )
+                                                    }
+                                                >
                                                     <Eye className="h-5 w-5" />
                                                 </button>
-                                                <button className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
+                                                <button className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">
                                                     <Edit className="h-5 w-5" />
                                                 </button>
-                                                <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>
                                             </div>
@@ -232,22 +216,9 @@ export default function DashboardPage() {
                         </table>
                     </div>
 
-                    {myEvents.length === 0 && (
-                        <div className="text-center py-12">
-                            <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                                Belum Ada Event
-                            </h3>
-                            <p className="text-gray-500 mb-6">
-                                Mulai buat event lari pertama Anda sekarang
-                            </p>
-                            <Link
-                                href="/dashboard/create-event"
-                                className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors font-semibold"
-                            >
-                                <Plus className="h-5 w-5" />
-                                <span>Buat Event Baru</span>
-                            </Link>
+                    {events.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                            Belum ada event dibuat.
                         </div>
                     )}
                 </div>

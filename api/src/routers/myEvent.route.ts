@@ -16,12 +16,7 @@ export const myeventRouter = () => {
         myeventController.createEvent
     );
 
-    router.get(
-        "/all",
-        verifyToken,
-        organizerGuard,
-        myeventController.getAllmyEvents
-    );
+    router.get("/all", verifyToken, myeventController.getAllmyEvents);
 
     router.get("/:id", myeventController.getMyEventById);
 
