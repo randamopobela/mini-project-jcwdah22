@@ -29,6 +29,8 @@ export const myeventRouter = () => {
 
     router.post("/:id/vouchers", myeventController.createVoucher);
 
+    router.patch("/:id/cancel", myeventController.cancelEvent);
+
     router.delete("/:id", myeventController.deletemyEvent);
 
     return router;

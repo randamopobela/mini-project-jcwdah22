@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import API from "@/lib/axiosInstance";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const statusStyles = {
     PUBLISHED: "bg-green-100 text-green-800",
@@ -51,6 +52,33 @@ export default function DashboardPage() {
 
         fetchMyEvents();
     }, []);
+
+    const handleDelete = async (eventId: string) => {
+        // Konfirmasi sebelum menghapus
+        const confirmDelete = window.confirm(
+            "Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan."
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            // Panggil endpoint delete
+            await API.delete(`/myevent/${eventId}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            // Tampilkan notifikasi sukses
+            toast.success("Event berhasil dihapus!");
+
+            // Refresh daftar event setelah dihapus
+            setEvents((prev) => prev.filter((e: any) => e.id !== eventId));
+        } catch (error: any) {
+            console.error(error);
+            toast.error("Gagal menghapus event. Silakan coba lagi.");
+        }
+    };
 
     console.log("isi dari fetch event: ", typeof events, events);
 
@@ -224,16 +252,89 @@ export default function DashboardPage() {
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                                                     onClick={() =>
                                                         router.push(
-                                                            `/dashboard/event/${event.id}`
+                                                            `/dashboard/event/${event.id}/detail`
                                                         )
                                                     }
                                                 >
                                                     <Eye className="h-5 w-5" />
                                                 </button>
-                                                <button className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">
+
+                                                <button
+                                                    className={`p-2 rounded-lg transition-colors ${
+                                                        [
+                                                            "PUBLISHED",
+                                                            "ONGOING",
+                                                            "COMPLETED",
+                                                            "CANCELED",
+                                                        ].includes(event.status)
+                                                            ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                                                            : "text-amber-600 hover:bg-amber-50"
+                                                    }`}
+                                                    disabled={[
+                                                        "PUBLISHED",
+                                                        "ONGOING",
+                                                        "COMPLETED",
+                                                        "CANCELED",
+                                                    ].includes(event.status)}
+                                                    onClick={() => {
+                                                        if (
+                                                            ![
+                                                                "PUBLISHED",
+                                                                "ONGOING",
+                                                                "COMPLETED",
+                                                                "CANCELED",
+                                                            ].includes(
+                                                                event.status
+                                                            )
+                                                        ) {
+                                                            router.push(
+                                                                `/dashboard/event/${event.id}/edit`
+                                                            );
+                                                        }
+                                                    }}
+                                                >
                                                     <Edit className="h-5 w-5" />
                                                 </button>
-                                                <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+
+                                                <button
+                                                    className={`p-2 rounded-lg transition-colors ${
+                                                        ["DRAFT"].includes(
+                                                            event.status
+                                                        )
+                                                            ? "text-red-600 hover:bg-red-50"
+                                                            : "text-gray-400 bg-gray-50 cursor-not-allowed"
+                                                    }`}
+                                                    disabled={[
+                                                        "PUBLISHED",
+                                                        "ONGOING",
+                                                        "COMPLETED",
+                                                        "CANCELED",
+                                                    ].includes(event.status)}
+                                                    onClick={() => {
+                                                        if (
+                                                            ![
+                                                                "PUBLISHED",
+                                                                "ONGOING",
+                                                                "COMPLETED",
+                                                                "CANCELED",
+                                                            ].includes(
+                                                                event.status
+                                                            )
+                                                        ) {
+                                                            // Panggil fungsi hapus event di sini
+                                                            handleDelete(
+                                                                event.id
+                                                            );
+                                                        }
+                                                    }}
+                                                    title={
+                                                        ["DRAFT"].includes(
+                                                            event.status
+                                                        )
+                                                            ? "Hapus event"
+                                                            : "Event yang sedang berlangsung atau sudah selesai tidak bisa dihapus"
+                                                    }
+                                                >
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>
                                             </div>

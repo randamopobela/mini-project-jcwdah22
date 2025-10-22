@@ -145,6 +145,14 @@ class MyEventsService {
         });
     }
 
+    //    Mengubah status event menjadi CANCELLED
+    async updateStatus(eventId: string, newStatus: EventStatus) {
+        return prisma.event.update({
+            where: { id: Number(eventId) },
+            data: { status: newStatus },
+        });
+    }
+
     //   Menghapus event milik seorang organizer.
     async delete(id: number, organizerId: string) {
         return prisma.event.delete({

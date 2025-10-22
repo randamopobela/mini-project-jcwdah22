@@ -239,6 +239,27 @@ class MyEventsController {
         }
     }
 
+    async cancelEvent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const updatedEvent = await myEventService.updateStatus(
+                id,
+                EventStatus.CANCELED
+            );
+            res.status(200).json({
+                message: "Event berhasil dibatalkan.",
+                data: updatedEvent,
+            });
+        } catch (error: any) {
+            next(
+                new ErrorHandler(
+                    `Gagal membatalkan event: ${error.message}`,
+                    500
+                )
+            );
+        }
+    }
+
     async deletemyEvent(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.user?.id)
