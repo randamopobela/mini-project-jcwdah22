@@ -8,15 +8,12 @@ import myEventService from "../services/myEvent.service";
 class MyEventsController {
     async createEvent(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log("req.body: ", req.body);
-            console.log("req.file 1: ", req.file);
             // 1. Validasi Autentikasi & File
             if (!req.user?.id)
                 return next(
                     new ErrorHandler("User tidak terautentikasi.", 401)
                 );
 
-            console.log("req.file 2: ", req.file);
             if (!req.file)
                 return next(
                     new ErrorHandler("Gambar event wajib diunggah.", 400)
@@ -72,7 +69,7 @@ class MyEventsController {
                 organizerId,
                 eventPicture,
                 isFree: isFreeBool,
-                status: status as EventStatus,
+                status: EventStatus.DRAFT,
                 category: category as EventCategory,
                 price: Number(price || 0),
                 totalSlots: Number(totalSlots),

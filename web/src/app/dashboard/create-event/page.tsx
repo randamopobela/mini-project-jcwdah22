@@ -58,7 +58,7 @@ const eventSchema = Yup.object().shape({
     totalSlots: Yup.number()
         .min(1, "Minimal 1 slot")
         .required("Total slot harus diisi"),
-    eventPicture: Yup.mixed().nullable(),
+    eventPicture: Yup.mixed().nullable().required("Gambar event harus ada"),
 });
 
 const categories = [
@@ -131,6 +131,7 @@ export default function CreateEventPage() {
 
             await API.post("/myevent/create", formData, {
                 headers: {
+                    "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
@@ -293,6 +294,7 @@ export default function CreateEventPage() {
                                             >
                                                 Gambar Event
                                             </label>
+
                                             <div className="flex items-center space-x-4">
                                                 {eventPicture && (
                                                     <img
@@ -301,7 +303,16 @@ export default function CreateEventPage() {
                                                         className="w-32 h-32 object-cover rounded-lg border"
                                                     />
                                                 )}
-                                                <label className="flex items-center justify-center px-6 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+
+                                                <label
+                                                    className={`flex items-center justify-center px-6 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors
+                                                    ${
+                                                        touched.eventPicture &&
+                                                        errors.eventPicture
+                                                            ? "border-red-500 hover:border-red-500"
+                                                            : "border-gray-300 hover:border-primary-500"
+                                                    }`}
+                                                >
                                                     <ImageIcon className="h-5 w-5 text-gray-400 mr-2" />
                                                     <span className="text-gray-600">
                                                         {eventPicture
@@ -322,6 +333,12 @@ export default function CreateEventPage() {
                                                     />
                                                 </label>
                                             </div>
+
+                                            <ErrorMessage
+                                                name="eventPicture"
+                                                component="div"
+                                                className="text-red-500 text-sm mt-1"
+                                            />
                                         </div>
                                     </div>
                                 </div>

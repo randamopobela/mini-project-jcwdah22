@@ -12,10 +12,16 @@ export const myeventRouter = () => {
         "/create",
         uploader("IMG", "/images").single("eventPicture"),
         verifyToken,
+        organizerGuard,
         myeventController.createEvent
     );
 
-    router.get("/all", myeventController.getAllmyEvents);
+    router.get(
+        "/all",
+        verifyToken,
+        organizerGuard,
+        myeventController.getAllmyEvents
+    );
 
     router.get("/:id", myeventController.getMyEventById);
 
