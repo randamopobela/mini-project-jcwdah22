@@ -4,16 +4,23 @@ import { Event, EventCategory, EventStatus } from "@prisma/client";
 export interface IEventData {
     title: string;
     description: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    isFree: boolean;
-    eventPicture: string;
-    organizerId: string;
-    status: EventStatus;
     category: EventCategory;
+    eventPicture: string;
+    location: string;
+    startDate: Date;
+    endDate: Date;
     price: number;
     totalSlots: number;
+    organizerId: string;
+    status: EventStatus;
+    isFree: boolean;
+}
+
+export interface IEventDataSearch extends IEventData {
+    id: number;
+    availableSlots: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IVoucherData {

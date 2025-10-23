@@ -60,11 +60,14 @@ export const verifyToken = async (
     next: NextFunction
 ) => {
     try {
-        const authHeader = req.get("authorization");
-        if (!authHeader)
+        const headerValue = req.headers.authorization;
+        const rawHeader = Array.isArray(headerValue)
+            ? headerValue[0]
+            : headerValue;
+        if (!rawHeader)
             throw new ErrorHandler("Authorization header missing", 401);
 
-        const token = authHeader.split(" ")[1];
+        const token = rawHeader.replace(/^Bearer\s+/i, "").trim();
         if (!token) throw new ErrorHandler("Token missing", 401);
 
         const decoded = verifyJWT(token) as TUser;

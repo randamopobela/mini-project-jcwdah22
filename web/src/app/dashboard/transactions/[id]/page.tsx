@@ -74,7 +74,7 @@ export default function TransactionDetailPage() {
     const { user, isLoading } = useAuth();
     const router = useRouter();
     const params = useParams();
-    const [transaction, setTransaction] = useState<Transaction | null>(
+    const [transaction, setTransaction] = useState<TTransaction | null>(
         mockTransaction
     );
 

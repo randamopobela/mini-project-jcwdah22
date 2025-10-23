@@ -13,6 +13,7 @@ import {
     Upload,
     CreditCard,
     Clock,
+    ArrowLeft,
 } from "lucide-react";
 
 // import { Transaction } from "@/types";
@@ -119,6 +120,13 @@ export default function TransactionsPage() {
             {/* 🔹 Hero Section */}
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12 shadow-lg">
                 <div className="max-w-7xl mx-auto px-4">
+                    <button
+                        onClick={() => router.push("/dashboard")}
+                        className="inline-flex items-center space-x-2 text-white hover:text-orange-100 mb-4 transition"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                        <span>Kembali ke Dashboard</span>
+                    </button>
                     <h1 className="text-4xl font-bold mb-2">Transaksi Tiket</h1>
                     <p className="text-blue-100 text-lg">
                         Lihat dan kelola transaksi pembelian tiket event Anda
