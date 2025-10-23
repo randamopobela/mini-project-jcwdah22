@@ -287,12 +287,14 @@ class MyEventsController {
 
     async createVoucher(req: Request, res: Response, next: NextFunction) {
         try {
+            console.log("ini req.body dari controller: ", req.body);
             if (!req.user?.id)
                 return next(
                     new ErrorHandler("User tidak terautentikasi.", 401)
                 );
 
             const {
+                eventId,
                 voucherCode,
                 discountAmount,
                 minimalPurchase,
@@ -300,6 +302,7 @@ class MyEventsController {
                 startDate,
                 endDate,
             } = req.body;
+
             if (!voucherCode || !discountAmount || !startDate || !endDate) {
                 return next(
                     new ErrorHandler(
@@ -314,11 +317,14 @@ class MyEventsController {
                 req.user.id,
                 {
                     ...req.body,
+                    eventId: Number(eventId),
                     discountAmount: Number(discountAmount),
                     minimalPurchase: Number(minimalPurchase || 0),
                     maximalDiscount: Number(maximalDiscount || 0),
                 }
             );
+
+            console.log("ini newVoucher: ", newVoucher);
 
             res.status(201).json({
                 message: "Voucher baru berhasil dibuat!",

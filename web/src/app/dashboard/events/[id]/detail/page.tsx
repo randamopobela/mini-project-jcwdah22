@@ -64,7 +64,7 @@ export default function EventDetailPage() {
             );
             toast.success("Event berhasil dipublish!");
             router.refresh();
-            router.push("/dashboard");
+            router.push("/dashboard/events");
         } catch {
             toast.error("Gagal mempublish event.");
         }
@@ -90,7 +90,7 @@ export default function EventDetailPage() {
                 }
             );
             toast.success("Event berhasil dibatalkan!");
-            router.push("/dashboard");
+            router.push("/dashboard/events");
         } catch {
             toast.error("Gagal membatalkan event.");
         }
@@ -109,11 +109,11 @@ export default function EventDetailPage() {
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <button
-                        onClick={() => router.push("/dashboard")}
+                        onClick={() => router.push("/dashboard/events")}
                         className="inline-flex items-center space-x-2 text-white hover:text-blue-100 mb-4 transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5" />
-                        <span>Kembali ke Dashboard</span>
+                        <span>Kembali</span>
                     </button>
                     <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
                     <p className="text-blue-100 text-lg">Detail event Anda</p>

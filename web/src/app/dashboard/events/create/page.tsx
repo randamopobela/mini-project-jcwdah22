@@ -137,7 +137,7 @@ export default function CreateEventPage() {
             });
 
             toast.success("Event berhasil dibuat!");
-            router.push("/dashboard");
+            router.push("/dashboard/events");
         } catch (error: any) {
             console.error(error);
             toast.error("Gagal membuat event. Silakan coba lagi.", error);
@@ -158,11 +158,11 @@ export default function CreateEventPage() {
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <Link
-                        href="/dashboard"
+                        href="/dashboard/events"
                         className="inline-flex items-center space-x-2 text-white hover:text-blue-100 mb-4 transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5" />
-                        <span>Kembali ke Dashboard</span>
+                        <span>Kembali</span>
                     </Link>
                     <h1 className="text-4xl font-bold mb-2">Buat Event Baru</h1>
                     <p className="text-blue-100 text-lg">
@@ -546,7 +546,7 @@ export default function CreateEventPage() {
                                 {/* Tombol Aksi */}
                                 <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                                     <Link
-                                        href="/dashboard"
+                                        href="/dashboard/events"
                                         className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-semibold"
                                     >
                                         Batal

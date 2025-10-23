@@ -11,6 +11,8 @@ import {
     TrendingUp,
     DollarSign,
     Users,
+    TicketPlus,
+    CreditCard,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import API from "@/lib/axiosInstance";
@@ -149,207 +151,86 @@ export default function DashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">+23%</p>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-md p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            Event Saya
-                        </h2>
+
+                <div className="md:grid-cols-4 gap-6 mb-8">
+                    {/* Section Event */}
+                    <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100 hover:shadow-xl transition">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                <Calendar className="text-primary-600 h-6 w-6" />
+                                Event Saya
+                            </h2>
+                            <Link
+                                href="/dashboard/events"
+                                className="text-primary-600 hover:text-primary-700 font-semibold"
+                            >
+                                Lihat Semua →
+                            </Link>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                            Kelola dan pantau seluruh event yang Anda buat.
+                        </p>
                         <Link
-                            href="/dashboard/create-event"
-                            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors font-semibold inline-flex items-center space-x-2"
+                            href="/dashboard/events/create"
+                            className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition"
                         >
-                            <Plus className="h-5 w-5" />
-                            <span>Buat Event Baru</span>
+                            <Calendar className="h-5 w-5 mr-2" /> Buat Event
+                            Baru
                         </Link>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-gray-200">
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Event
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Tanggal
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Status
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Total Kuota
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Tersisa
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Harga
-                                    </th>
-                                    <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {events.map((event) => (
-                                    <tr
-                                        key={event.id}
-                                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <td className="py-4 px-4">
-                                            <div className="flex items-center space-x-3">
-                                                <img
-                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${event.eventPicture}`}
-                                                    alt={event.title}
-                                                    className="w-12 h-12 rounded-lg object-cover"
-                                                />
-                                                <div>
-                                                    <p className="font-semibold text-gray-900">
-                                                        {event.title}
-                                                    </p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {event.location}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        <td className="py-4 px-4 text-gray-700">
-                                            {new Date(
-                                                event.startDate
-                                            ).toLocaleDateString("id-ID")}
-                                        </td>
-
-                                        <td className="py-4 px-4">
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                    statusStyles[
-                                                        event.status as keyof typeof statusStyles
-                                                    ]
-                                                }`}
-                                            >
-                                                {event.status}
-                                            </span>
-                                        </td>
-
-                                        <td className="py-4 px-4 text-gray-700">
-                                            {event.totalSlots.toLocaleString()}
-                                        </td>
-
-                                        <td className="py-4 px-4 text-gray-700">
-                                            {event.availableSlots.toLocaleString()}
-                                        </td>
-
-                                        <td className="py-4 px-4 text-gray-700">
-                                            {event.price && event.price > 0
-                                                ? `Rp ${event.price.toLocaleString()}`
-                                                : "Gratis"}
-                                        </td>
-
-                                        <td className="py-4 px-4">
-                                            <div className="flex items-center space-x-2">
-                                                <button
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                                    onClick={() =>
-                                                        router.push(
-                                                            `/dashboard/event/${event.id}/detail`
-                                                        )
-                                                    }
-                                                >
-                                                    <Eye className="h-5 w-5" />
-                                                </button>
-
-                                                <button
-                                                    className={`p-2 rounded-lg transition-colors ${
-                                                        [
-                                                            "PUBLISHED",
-                                                            "ONGOING",
-                                                            "COMPLETED",
-                                                            "CANCELED",
-                                                        ].includes(event.status)
-                                                            ? "text-gray-400 bg-gray-50 cursor-not-allowed"
-                                                            : "text-amber-600 hover:bg-amber-50"
-                                                    }`}
-                                                    disabled={[
-                                                        "PUBLISHED",
-                                                        "ONGOING",
-                                                        "COMPLETED",
-                                                        "CANCELED",
-                                                    ].includes(event.status)}
-                                                    onClick={() => {
-                                                        if (
-                                                            ![
-                                                                "PUBLISHED",
-                                                                "ONGOING",
-                                                                "COMPLETED",
-                                                                "CANCELED",
-                                                            ].includes(
-                                                                event.status
-                                                            )
-                                                        ) {
-                                                            router.push(
-                                                                `/dashboard/event/${event.id}/edit`
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    <Edit className="h-5 w-5" />
-                                                </button>
-
-                                                <button
-                                                    className={`p-2 rounded-lg transition-colors ${
-                                                        ["DRAFT"].includes(
-                                                            event.status
-                                                        )
-                                                            ? "text-red-600 hover:bg-red-50"
-                                                            : "text-gray-400 bg-gray-50 cursor-not-allowed"
-                                                    }`}
-                                                    disabled={[
-                                                        "PUBLISHED",
-                                                        "ONGOING",
-                                                        "COMPLETED",
-                                                        "CANCELED",
-                                                    ].includes(event.status)}
-                                                    onClick={() => {
-                                                        if (
-                                                            ![
-                                                                "PUBLISHED",
-                                                                "ONGOING",
-                                                                "COMPLETED",
-                                                                "CANCELED",
-                                                            ].includes(
-                                                                event.status
-                                                            )
-                                                        ) {
-                                                            // Panggil fungsi hapus event di sini
-                                                            handleDelete(
-                                                                event.id
-                                                            );
-                                                        }
-                                                    }}
-                                                    title={
-                                                        ["DRAFT"].includes(
-                                                            event.status
-                                                        )
-                                                            ? "Hapus event"
-                                                            : "Event yang sedang berlangsung atau sudah selesai tidak bisa dihapus"
-                                                    }
-                                                >
-                                                    <Trash2 className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    {/* Section Voucher */}
+                    <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100 hover:shadow-xl transition">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                <TicketPlus className="text-amber-600 h-6 w-6" />
+                                Voucher Saya
+                            </h2>
+                            <Link
+                                href="/dashboard/vouchers"
+                                className="text-amber-600 hover:text-amber-700 font-semibold"
+                            >
+                                Lihat Semua →
+                            </Link>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                            Buat dan kelola voucher promosi untuk event Anda.
+                        </p>
+                        <Link
+                            href="/dashboard/vouchers/create"
+                            className="inline-flex items-center bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold transition"
+                        >
+                            <TicketPlus className="h-5 w-5 mr-2" /> Buat Voucher
+                            Baru
+                        </Link>
                     </div>
 
-                    {events.length === 0 && (
-                        <div className="text-center py-12 text-gray-500">
-                            Belum ada event dibuat.
+                    {/* 💳 Section Transaksi */}
+                    <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100 hover:shadow-xl transition">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                <CreditCard className="text-green-600 h-6 w-6" />
+                                Transaksi Saya
+                            </h2>
+                            <Link
+                                href="/dashboard/transactions"
+                                className="text-green-600 hover:text-green-700 font-semibold"
+                            >
+                                Lihat Semua →
+                            </Link>
                         </div>
-                    )}
+                        <p className="text-gray-600 mb-6">
+                            Pantau pembayaran dan status transaksi peserta di
+                            setiap event Anda.
+                        </p>
+                        <Link
+                            href="/dashboard/transactions"
+                            className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition"
+                        >
+                            <CreditCard className="h-5 w-5 mr-2" /> Lihat
+                            Transaksi
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

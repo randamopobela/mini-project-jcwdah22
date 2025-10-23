@@ -122,7 +122,7 @@ export default function EditEventPage() {
             });
 
             toast.success("Event berhasil diperbarui!");
-            router.push(`/dashboard/event/${id}/detail`);
+            router.push(`/dashboard/events/${id}/detail`);
         } catch (error) {
             console.error(error);
             toast.error("Gagal memperbarui event. Silakan coba lagi.");
@@ -142,11 +142,11 @@ export default function EditEventPage() {
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <Link
-                        href="/dashboard"
+                        href="/dashboard/events"
                         className="inline-flex items-center space-x-2 text-white hover:text-blue-100 mb-4 transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5" />
-                        <span>Kembali ke Dashboard</span>
+                        <span>Kembali</span>
                     </Link>
                     <h1 className="text-4xl font-bold mb-2">Edit Event</h1>
                     <p className="text-blue-100 text-lg">
@@ -427,7 +427,7 @@ export default function EditEventPage() {
                                 {/* Tombol Aksi */}
                                 <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                                     <Link
-                                        href="/dashboard"
+                                        href="/dashboard/events"
                                         className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold"
                                     >
                                         Batal
