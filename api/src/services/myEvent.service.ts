@@ -188,6 +188,55 @@ class MyEventsService {
         });
     }
 
+    // async findVouchersByEvent(eventId: number, organizerId: string) {
+    //     // pastikan event milik organizer ini
+    //     const event = await prisma.event.findFirst({
+    //         where: { id: eventId, organizerId },
+    //     });
+
+    //     if (!event) {
+    //         throw new ErrorHandler(
+    //             "Event tidak ditemukan atau Anda tidak memiliki akses.",
+    //             404
+    //         );
+    //     }
+
+    //     // ambil voucher hanya dari event tersebut
+    //     return prisma.voucher.findMany({
+    //         where: { eventId },
+    //         orderBy: { createdAt: "desc" },
+    //     });
+    // }
+
+    async findAllByUser(userId: string) {
+        return prisma.transaction.findMany({
+            where: { userId },
+            include: {
+                event: {
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        category: true,
+                        eventPicture: true,
+                        location: true,
+                        startDate: true,
+                        endDate: true,
+                        price: true,
+                        availableSlots: true,
+                        totalSlots: true,
+                        organizerId: true,
+                        status: true,
+                        isFree: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
     //   mengambil semua transaksi untuk event milik seorang organizer.
     async findTransactionsByEvent(eventId: number, organizerId: string) {
         // Langkah 1: Validasi dulu apakah event ini benar milik organizer

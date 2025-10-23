@@ -55,7 +55,7 @@ export default function CreateVoucherPage() {
                 },
             });
             toast.success("Voucher berhasil dibuat!");
-            router.push("/dashboard/vouchers");
+            router.push("/dashboard");
         } catch {
             toast.error("Gagal membuat voucher. Silakan coba lagi.");
         }
@@ -67,7 +67,7 @@ export default function CreateVoucherPage() {
             <div className="bg-gradient-to-r from-amber-600 to-orange-500 text-white py-12">
                 <div className="max-w-5xl mx-auto px-4">
                     <button
-                        onClick={() => router.push("/dashboard/vouchers")}
+                        onClick={() => router.push("/dashboard")}
                         className="inline-flex items-center space-x-2 text-white hover:text-orange-100 mb-4 transition"
                     >
                         <ArrowLeft className="h-5 w-5" />
@@ -203,7 +203,7 @@ export default function CreateVoucherPage() {
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            router.push("/dashboard/vouchers")
+                                            router.push("/dashboard")
                                         }
                                         className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-semibold"
                                     >

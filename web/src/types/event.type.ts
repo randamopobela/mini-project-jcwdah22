@@ -16,3 +16,13 @@ export type IEventData = {
     createdAt: Date;
     updatedAt: Date;
 };
+
+export type TVoucher = {
+    voucherCode: string;
+    discountAmount: number;
+    minimalPurchase: number;
+    maximalDiscount: number;
+    startDate: string;
+    endDate: string;
+    isActive?: boolean;
+};

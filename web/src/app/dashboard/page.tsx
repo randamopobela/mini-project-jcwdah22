@@ -36,52 +36,6 @@ export default function DashboardPage() {
         if (!isLoading && !user) router.push("/login");
     }, [user, isLoading, router]);
 
-    useEffect(() => {
-        const fetchMyEvents = async () => {
-            try {
-                const response = await API.get("/myevent/all", {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem(
-                            "token"
-                        )}`,
-                    },
-                });
-                setEvents(response.data.data); // karena backend kirim { message, data: events }
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        fetchMyEvents();
-    }, []);
-
-    const handleDelete = async (eventId: string) => {
-        // Konfirmasi sebelum menghapus
-        const confirmDelete = window.confirm(
-            "Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan."
-        );
-
-        if (!confirmDelete) return;
-
-        try {
-            // Panggil endpoint delete
-            await API.delete(`/myevent/${eventId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            });
-
-            // Tampilkan notifikasi sukses
-            toast.success("Event berhasil dihapus!");
-
-            // Refresh daftar event setelah dihapus
-            setEvents((prev) => prev.filter((e: any) => e.id !== eventId));
-        } catch (error: any) {
-            console.error(error);
-            toast.error("Gagal menghapus event. Silakan coba lagi.");
-        }
-    };
-
     console.log("isi dari fetch event: ", typeof events, events);
 
     return (

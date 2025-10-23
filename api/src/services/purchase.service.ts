@@ -1,0 +1,148 @@
+import { Request, Response } from "express";
+import { prisma } from "../config/config";
+import { responseHandler } from "../helpers/response.handler";
+
+class PurchaseService {
+    async findByUser(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId)
+                return responseHandler(res, "User tidak valid", null, 401);
+
+            const transactions = await prisma.transaction.findMany({
+                where: { userId },
+                include: {
+                    event: true, // ambil data event agar bisa diakses di frontend
+                },
+                orderBy: { createdAt: "desc" },
+            });
+
+            const formatted = transactions.map((trx) => ({
+                id: trx.id,
+                userId: trx.userId,
+                eventId: trx.event,
+                ticketQuantity: trx.ticketQuantity,
+                totalPrice: trx.totalPrice,
+                discountPoints: trx.discountPoints,
+                discountVouchers: trx.discountVouchers,
+                discountCoupons: trx.discountCoupons,
+                finalPrice: trx.finalPrice,
+                status: trx.status,
+                paymentProof: trx.paymentProof,
+                paymentMethod: trx.paymentMethod,
+                expiredAt: trx.expiredAt,
+                createdAt: trx.createdAt,
+                updatedAt: trx.updatedAt,
+            }));
+
+            return responseHandler(
+                res,
+                "Daftar transaksi berhasil diambil",
+                formatted,
+                200
+            );
+        } catch (error: any) {
+            return responseHandler(
+                res,
+                "Gagal mengambil daftar transaksi",
+                error.message,
+                500
+            );
+        }
+    }
+
+    async findById(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?.id;
+            const { id } = req.params;
+
+            const trx = await prisma.transaction.findFirst({
+                where: { id: Number(id), userId },
+                include: { event: true },
+            });
+
+            if (!trx)
+                return responseHandler(
+                    res,
+                    "Transaksi tidak ditemukan",
+                    null,
+                    404
+                );
+
+            const formatted = {
+                id: trx.id,
+                userId: trx.userId,
+                eventId: trx.event,
+                ticketQuantity: trx.ticketQuantity,
+                totalPrice: trx.totalPrice,
+                discountPoints: trx.discountPoints,
+                discountVouchers: trx.discountVouchers,
+                discountCoupons: trx.discountCoupons,
+                finalPrice: trx.finalPrice,
+                status: trx.status,
+                paymentProof: trx.paymentProof,
+                paymentMethod: trx.paymentMethod,
+                expiredAt: trx.expiredAt,
+                createdAt: trx.createdAt,
+                updatedAt: trx.updatedAt,
+            };
+
+            return responseHandler(
+                res,
+                "Detail transaksi berhasil diambil",
+                formatted,
+                200
+            );
+        } catch (error: any) {
+            return responseHandler(
+                res,
+                "Gagal mengambil detail transaksi",
+                error.message,
+                500
+            );
+        }
+    }
+
+    async uploadProof(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const userId = (req as any).user?.id;
+            const file = req.file?.filename;
+
+            if (!file)
+                return responseHandler(res, "File tidak ditemukan", null, 400);
+
+            const trx = await prisma.transaction.findFirst({
+                where: { id: Number(id), userId },
+            });
+
+            if (!trx)
+                return responseHandler(
+                    res,
+                    "Transaksi tidak ditemukan",
+                    null,
+                    404
+                );
+
+            const updated = await prisma.transaction.update({
+                where: { id: Number(id) },
+                data: {
+                    paymentProof: `/PROOF/${file}`,
+                    status: "PENDING_CONFIRMATION",
+                    updatedAt: new Date(),
+                },
+            });
+
+            return responseHandler(
+                res,
+                "Bukti pembayaran berhasil diunggah",
+                updated,
+                200
+            );
+        } catch (error: any) {
+            return responseHandler(res, error.message, null, 500);
+        }
+    }
+}
+
+export default new PurchaseService();

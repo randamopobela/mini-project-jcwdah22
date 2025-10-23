@@ -25,6 +25,28 @@ export default function EventsPage() {
         if (!isLoading && !user) router.push("/login");
     }, [user, isLoading, router]);
 
+    useEffect(() => {
+        const fetchMyEvents = async () => {
+            try {
+                const response = await API.get("/myevent/all", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
+                setEvents(response.data.data);
+            } catch (err) {
+                console.error(err);
+                toast.error("Gagal memuat event.");
+            } finally {
+                setLoading(false); // ✅ pastikan loading dihentikan di sini
+            }
+        };
+
+        fetchMyEvents();
+    }, []);
+
     // Warna untuk status event
     const statusStyles: Record<string, string> = {
         DRAFT: "bg-gray-100 text-gray-700",
@@ -34,44 +56,30 @@ export default function EventsPage() {
         CANCELED: "bg-red-100 text-red-700",
     };
 
-    // Fetch data event organizer
-    useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const res = await API.get("/myevent/all", {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem(
-                            "token"
-                        )}`,
-                    },
-                });
-                setEvents(res.data.data);
-            } catch (error) {
-                toast.error("Gagal memuat daftar event.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEvents();
-    }, []);
-
-    // Hapus event
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (eventId: string) => {
+        // Konfirmasi sebelum menghapus
         const confirmDelete = window.confirm(
-            "Apakah Anda yakin ingin menghapus event ini?"
+            "Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan."
         );
+
         if (!confirmDelete) return;
 
         try {
-            await API.delete(`/myevent/${id}`, {
+            // Panggil endpoint delete
+            await API.delete(`/myevent/${eventId}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
+
+            // Tampilkan notifikasi sukses
             toast.success("Event berhasil dihapus!");
-            setEvents((prev) => prev.filter((e) => e.id !== id));
-        } catch {
-            toast.error("Gagal menghapus event.");
+
+            // Refresh daftar event setelah dihapus
+            setEvents((prev) => prev.filter((e: any) => e.id !== eventId));
+        } catch (error: any) {
+            console.error(error);
+            toast.error("Gagal menghapus event. Silakan coba lagi.");
         }
     };
 

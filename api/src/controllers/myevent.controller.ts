@@ -343,6 +343,66 @@ class MyEventsController {
         }
     }
 
+    // async getVouchersByEvent(req: Request, res: Response, next: NextFunction) {
+    //     try {
+    //         console.log("ini req.user.id: ", req.user?.id);
+    //         if (!req.user?.id)
+    //             return next(
+    //                 new ErrorHandler("User tidak terautentikasi.", 401)
+    //             );
+
+    //         const eventId = Number(req.params.id);
+
+    //         if (isNaN(eventId)) {
+    //             return next(new ErrorHandler("ID event tidak valid.", 400));
+    //         }
+
+    //         const vouchers = await myEventService.findVouchersByEvent(
+    //             eventId,
+    //             req.user.id
+    //         );
+
+    //         res.status(200).json({
+    //             message: "Berhasil mengambil voucher untuk event ini.",
+    //             data: vouchers,
+    //         });
+    //     } catch (error: any) {
+    //         console.error("Error di getVouchersByEvent:", error);
+    //         next(
+    //             new ErrorHandler(
+    //                 `Gagal mengambil voucher: ${error.message}`,
+    //                 500
+    //             )
+    //         );
+    //     }
+    // }
+
+    async getMyTransactions(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.user?.id)
+                return next(
+                    new ErrorHandler("User tidak terautentikasi.", 401)
+                );
+
+            const transactions = await myEventService.findAllByUser(
+                req.user.id
+            );
+
+            res.status(200).json({
+                message: "Berhasil mengambil daftar transaksi Anda.",
+                data: transactions,
+            });
+        } catch (error: any) {
+            console.error("🔥 Error di getMyTransactions:", error);
+            next(
+                new ErrorHandler(
+                    `Gagal mengambil transaksi: ${error.message}`,
+                    500
+                )
+            );
+        }
+    }
+
     async getTransactionsByEvent(
         req: Request,
         res: Response,

@@ -1,6 +1,8 @@
+import { IEventData } from "./event.type";
+
 export type TTransaction = {
     id?: number;
-    eventId: number;
+    eventId: IEventData;
     userId: string;
     ticketQuantity: number;
     totalPrice: number;
