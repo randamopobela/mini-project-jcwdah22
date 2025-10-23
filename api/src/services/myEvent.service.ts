@@ -1,4 +1,4 @@
-import { EventStatus, Prisma } from "../generated/prisma";
+import { EventCategory, EventStatus, Prisma } from "../generated/prisma";
 import { prisma } from "../config/config";
 import { ErrorHandler } from "../helpers/response.handler";
 import {
