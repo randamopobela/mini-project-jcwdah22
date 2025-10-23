@@ -1,4 +1,4 @@
-import { EventStatus, Prisma } from "../generated/prisma";
+import { EventCategory, EventStatus, Prisma } from "../generated/prisma";
 import { prisma } from "../config/config";
 import { ErrorHandler } from "../helpers/response.handler";
 import {
@@ -9,7 +9,9 @@ import {
 import { sendEmail } from "../helpers/nodemailer";
 
 class MyEventsService {
-  //   membuat event baru
+  /**
+   * Membuat event baru berdasarkan skema database yang telah diperbarui.
+   */
   async create(data: IEventData) {
     return prisma.event.create({
       data: {
@@ -30,7 +32,9 @@ class MyEventsService {
     });
   }
 
-  //   mengambil semua event milik seorang organizer
+  /**
+   * Mengambil semua event milik seorang organizer.
+   */
   async findAllByOrganizer(organizerId: string) {
     return prisma.event.findMany({
       where: { organizerId },
@@ -38,14 +42,18 @@ class MyEventsService {
     });
   }
 
-  //   mengambil satu event milik seorang organizer berdasarkan ID
+  /**
+   * Mengambil detail satu event milik seorang organizer.
+   */
   async findByIdAndOrganizer(id: number, organizerId: string) {
     return prisma.event.findFirst({
       where: { id, organizerId },
     });
   }
 
-  //    Mempublikasikan event milik seorang organizer.
+  /**
+   * Mempublikasikan event milik seorang organizer.
+   */
   async publish(id: number, organizerId: string) {
     // Validasi kepemilikan sebelum update
     const event = await this.findByIdAndOrganizer(id, organizerId);
@@ -61,9 +69,8 @@ class MyEventsService {
     });
   }
 
-  //    Mengedit event milik seorang organizer.
   async editmyEvent(id: number, organizerId: string, data: IEventUpdateData) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Validasi kepemilikan event
       const event = await tx.event.findFirst({
         where: { id, organizerId },
@@ -114,14 +121,18 @@ class MyEventsService {
     });
   }
 
-  //   Menghapus event milik seorang organizer.
+  /**
+   * Menghapus event milik seorang organizer.
+   */
   async delete(id: number, organizerId: string) {
     return prisma.event.delete({
       where: { id, organizerId },
     });
   }
 
-  //   membuat voucher untuk event milik seorang organizer.
+  /**
+   * Membuat voucher untuk event milik seorang organizer.
+   */
   async createVoucher(
     eventId: number,
     organizerId: string,
@@ -149,7 +160,6 @@ class MyEventsService {
     });
   }
 
-  //   mengambil semua transaksi untuk event milik seorang organizer.
   async findTransactionsByEvent(eventId: number, organizerId: string) {
     // Langkah 1: Validasi dulu apakah event ini benar milik organizer
     const event = await prisma.event.findFirst({
@@ -186,7 +196,7 @@ class MyEventsService {
   }
 
   async acceptTransaction(transactionId: number, organizerId: string) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Ambil data transaksi beserta data event-nya untuk validasi
       const transaction = await tx.transaction.findUnique({
         where: { id: transactionId },
@@ -257,7 +267,7 @@ class MyEventsService {
   }
 
   async rejectTransaction(transactionId: number, organizerId: string) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Ambil data transaksi beserta data event-nya untuk validasi
       const transaction = await tx.transaction.findUnique({
         where: { id: transactionId },
@@ -489,20 +499,26 @@ class MyEventsService {
     });
 
     // 3. Proses data di JavaScript untuk mengelompokkan berdasarkan periode
-    const salesData = paidTransactions.reduce((acc, transaction) => {
-      // Buat kunci grup berdasarkan periode (misal: '2025-10-16' untuk harian)
-      const dateKey = transaction.createdAt
-        .toISOString()
-        .slice(0, period === "monthly" ? 7 : 10);
+    const salesData = paidTransactions.reduce(
+      (
+        acc: Record<string, number>,
+        transaction: { createdAt: Date; finalPrice: number }
+      ) => {
+        // Buat kunci grup berdasarkan periode (misal: '2025-10-16' untuk harian)
+        const dateKey = transaction.createdAt
+          .toISOString()
+          .slice(0, period === "monthly" ? 7 : 10);
 
-      // Jika kunci belum ada, inisialisasi. Jika sudah ada, tambahkan nilainya.
-      if (!acc[dateKey]) {
-        acc[dateKey] = 0;
-      }
-      acc[dateKey] += transaction.finalPrice;
+        // Jika kunci belum ada, inisialisasi. Jika sudah ada, tambahkan nilainya.
+        if (!acc[dateKey]) {
+          acc[dateKey] = 0;
+        }
+        acc[dateKey] += transaction.finalPrice;
 
-      return acc;
-    }, {} as Record<string, number>);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // 4. Ubah format objek menjadi array agar mudah dikonsumsi oleh library grafik di frontend
     const formattedReport = Object.keys(salesData).map((key) => ({
