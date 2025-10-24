@@ -5,6 +5,7 @@ import { Spinner } from "flowbite-react"; // Import spinner dari Flowbite
 import { IEvent } from "@/types/event.type";
 import { getAllPublicEvents } from "@/service/eventService";
 import EventList from "@/components/events/eventList";
+import { useSearchParams } from "next/navigation";
 
 function AllEventsPage() {
   // State untuk menyimpan daftar event
@@ -14,13 +15,17 @@ function AllEventsPage() {
   // State untuk pesan error
   const [error, setError] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
   // useEffect untuk mengambil data saat komponen dimuat
   useEffect(() => {
+    const search = searchParams?.get("search");
+    const location = searchParams?.get("location");
+    const category = searchParams?.get("category");
     const fetchEvents = async () => {
       try {
         setLoading(true); // Mulai loading
         setError(null); // Reset error
-        const data = await getAllPublicEvents(); // Panggil API
+        const data = await getAllPublicEvents({ search, location, category });
         setEvents(data); // Simpan data ke state
       } catch (err) {
         setError("Gagal mengambil data event. Silakan coba lagi nanti."); // Set pesan error
@@ -31,7 +36,7 @@ function AllEventsPage() {
     };
 
     fetchEvents(); // Jalankan fungsi fetch
-  }, []); // Array kosong berarti efek ini hanya berjalan sekali saat mount
+  }, [searchParams]); // Array kosong berarti efek ini hanya berjalan sekali saat mount
 
   // Tampilkan indikator loading jika sedang memuat
   if (loading) {
