@@ -1,0 +1,58 @@
+<div
+    style="font-family: 'Inter', Arial, sans-serif; background-color:#f7f7f7; padding:24px;"
+>
+    <div
+        style="max-width:640px; margin:auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.1)"
+    >
+
+        <div
+            style="background:linear-gradient(90deg,#2563eb,#4f46e5); color:white; padding:24px;"
+        >
+            <h1 style="margin:0; font-size:22px;">🎉 Tiket Anda Siap!</h1>
+            <p style="margin:8px 0 0;">Pembayaran Anda telah kami terima.</p>
+        </div>
+
+        <img
+            src="{{eventPicture}}"
+            alt="Event Banner"
+            style="width:100%; max-height:250px; object-fit:cover;"
+        />
+
+        <div style="padding:24px;">
+            <h2
+                style="margin:0 0 8px; font-size:20px; color:#111827;"
+            >{{eventTitle}}</h2>
+            <p style="margin:0; color:#6b7280;">{{eventLocation}}
+                —
+                {{eventDate}}</p>
+
+            <hr
+                style="margin:20px 0; border:none; border-top:1px solid #e5e7eb;"
+            />
+
+            <p><b>Nama:</b> {{userFullName}}</p>
+            <p><b>Email:</b> {{userEmail}}</p>
+            <p><b>Jumlah Tiket:</b> {{ticketQuantity}}</p>
+            <p><b>Total Pembayaran:</b> Rp {{finalPrice}}</p>
+            <p><b>Metode Pembayaran:</b> {{paymentMethod}}</p>
+
+            <div style="text-align:center; margin-top:24px;">
+                <img
+                    src="{{qrCode}}"
+                    alt="QR Code Tiket"
+                    style="width:160px; height:160px;"
+                />
+                <p style="color:#6b7280; font-size:14px;">Tunjukkan QR ini saat
+                    registrasi event.</p>
+            </div>
+        </div>
+    </div>
+
+    <p
+        style="text-align:center; color:#9ca3af; font-size:12px; margin-top:16px;"
+    >
+        ©
+        {{year}}
+        Eventify. All rights reserved.
+    </p>
+</div>

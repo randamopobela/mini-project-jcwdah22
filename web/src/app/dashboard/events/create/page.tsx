@@ -132,7 +132,6 @@ export default function CreateEventPage() {
             await API.post("/myevent/create", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 

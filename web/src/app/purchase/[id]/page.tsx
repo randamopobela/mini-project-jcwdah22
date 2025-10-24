@@ -69,7 +69,7 @@ export default function PurchaseDetailPage() {
             </div>
         );
 
-    const event = transaction.eventId;
+    const event = transaction.event;
 
     return (
         <div className="min-h-screen bg-gray-50">
