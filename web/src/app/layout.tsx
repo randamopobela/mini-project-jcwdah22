@@ -20,27 +20,26 @@ import { AuthProvider } from "@/contexts/AuthContext";
 // });
 
 export const metadata: Metadata = {
-    title: "RunEvent - Platform Tiket Event Lari",
-    description:
-        "Platform penjualan tiket untuk event lari terbaik di Indonesia",
+  title: "RunEvent - Platform Tiket Event Lari",
+  description: "Platform penjualan tiket untuk event lari terbaik di Indonesia",
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en">
-            <body className="antialiased">
-                <AuthProvider>
-                    <ThemeInit />
-                    <NavbarComponent />
-                    <main className="min-h-screen">{children}</main>
-                    <FooterComponent />
-                    <Toaster position="top-right" richColors />
-                </AuthProvider>
-            </body>
-        </html>
-    );
+  return (
+    <html lang="en">
+      <body className="antialiased bg-white">
+        <AuthProvider>
+          <ThemeInit />
+          <NavbarComponent />
+          <main className="min-h-screen">{children}</main>
+          <FooterComponent />
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </body>
+    </html>
+  );
 }
