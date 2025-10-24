@@ -1,445 +1,263 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, Badge, Button, Label, TextInput } from "flowbite-react";
+import { useParams, useRouter } from "next/navigation";
+import { Button, Spinner, Badge } from "flowbite-react";
 import {
+    ArrowLeft,
     Calendar,
     MapPin,
-    Ticket,
-    ArrowLeft,
-    Upload,
     CheckCircle,
     XCircle,
-    Clock,
     CreditCard,
+    User,
+    Ticket,
+    Clock,
 } from "lucide-react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import API from "@/lib/axiosInstance";
 import { toast } from "sonner";
 import { TTransaction } from "@/types/transaction.type";
 
-const PaymentProofSchema = Yup.object().shape({
-    paymentProof: Yup.string()
-        .url("URL tidak valid")
-        .required("Bukti bayar wajib diisi"),
-});
-
-const mockTransaction: TTransaction = {
-    id: 1,
-    userId: "1",
-    eventId: 1,
-    quantity: 2,
-    totalPrice: 500000,
-    paymentMethod: "BANK_TRANSFER",
-    paymentProof: "https://example.com/proof1.jpg",
-    status: "PENDING",
-    expiredAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    event: {
-        id: 1,
-        title: "Jakarta Marathon 2024",
-        category: "MARATHON",
-        location: "Jakarta, Indonesia",
-        startDate: "2024-11-15",
-        endDate: "2024-11-15",
-        price: 250000,
-        availableSlots: 750,
-        totalSlots: 1000,
-        organizerId: "2",
-        status: "PUBLISHED",
-        isFree: false,
-        description: "Marathon event di Jakarta",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-    user: {
-        id: "1",
-        email: "john@example.com",
-        userName: "john",
-        firstName: "John",
-        lastName: "Doe",
-        role: "CUSTOMER",
-        referralCode: "REF123456",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-};
-
 export default function TransactionDetailPage() {
-    const { user, isLoading } = useAuth();
+    const { id } = useParams() as { id: string };
     const router = useRouter();
-    const params = useParams();
-    const [transaction, setTransaction] = useState<TTransaction | null>(
-        mockTransaction
-    );
 
+    const [transaction, setTransaction] = useState<TTransaction | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // ✅ Fetch detail transaksi
     useEffect(() => {
-        if (!isLoading && !user) {
-            router.push("/login");
-        }
-    }, [user, isLoading, router]);
+        const fetchTransaction = async () => {
+            try {
+                const res = await API.get(`/transaction/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
+                setTransaction(res.data.data);
+            } catch {
+                toast.error("Gagal memuat detail transaksi.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTransaction();
+    }, [id]);
 
-    const handleUploadProof = async (
-        values: { paymentProof: string },
-        { setSubmitting }: any
-    ) => {
+    // ✅ Update status transaksi (Approve / Reject)
+    const handleStatusUpdate = async (status: string) => {
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setTransaction({
-                ...transaction!,
-                paymentProof: values.paymentProof,
-            });
-            toast.success("Bukti pembayaran berhasil diupload!");
-            setSubmitting(false);
-        } catch (error: any) {
-            toast.error(error.message || "Gagal mengupload bukti pembayaran.");
-            setSubmitting(false);
+            await API.patch(
+                `/transaction/${id}/status`,
+                { status },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                }
+            );
+            toast.success(
+                status === "PAID"
+                    ? "Transaksi berhasil disetujui!"
+                    : "Transaksi ditolak!"
+            );
+            router.push("/dashboard/transactions");
+        } catch {
+            toast.error("Gagal memperbarui status transaksi.");
         }
     };
 
-    const handleApprove = async () => {
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setTransaction({ ...transaction!, status: "PAID" });
-            toast.success("Pembayaran berhasil diapprove!");
-        } catch (error: any) {
-            toast.error(error.message || "Gagal mengapprove pembayaran.");
-        }
-    };
-
-    const handleReject = async () => {
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setTransaction({
-                ...transaction!,
-                status: "REJECTED",
-                paymentProof: undefined,
-            });
-            toast.success("Pembayaran berhasil ditolak.");
-        } catch (error: any) {
-            toast.error(error.message || "Gagal menolak pembayaran.");
-        }
-    };
-
-    if (isLoading || !user || !transaction) {
+    if (loading)
         return (
             <div className="min-h-screen flex items-center justify-center">
-                Memuat...
+                <Spinner size="lg" />
             </div>
         );
-    }
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "PAID":
-                return <Badge color="success">Dibayar</Badge>;
-            case "PENDING":
-                return <Badge color="warning">Menunggu Pembayaran</Badge>;
-            case "REJECTED":
-                return <Badge color="failure">Ditolak</Badge>;
-            case "EXPIRED":
-                return <Badge color="gray">Kadaluarsa</Badge>;
-            default:
-                return <Badge>{status}</Badge>;
-        }
-    };
+    if (!transaction)
+        return (
+            <div className="min-h-screen flex items-center justify-center text-gray-500">
+                Transaksi tidak ditemukan
+            </div>
+        );
 
-    const getPaymentMethodLabel = (method: string) => {
-        switch (method) {
-            case "BANK_TRANSFER":
-                return "Transfer Bank";
-            case "E_WALLET":
-                return "E-Wallet";
-            case "CREDIT_CARD":
-                return "Kartu Kredit";
-            default:
-                return method;
-        }
-    };
+    // ✅ Gabungkan URL bukti pembayaran
+    const paymentProofUrl = transaction.paymentProof
+        ? `${process.env.NEXT_PUBLIC_API_URL}${transaction.paymentProof}`
+        : null;
 
-    const isOrganizer =
-        user.role === "ORGANIZER" && user.id === transaction.event?.organizerId;
+    // ✅ Format tanggal
+    const formatDate = (date: string | Date) =>
+        new Date(date).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <main className="max-w-4xl mx-auto px-4 py-12">
-                <Link
-                    href="/transactions"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-6"
-                >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Kembali ke Daftar Transaksi
-                </Link>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12 shadow-lg">
+                <div className="max-w-7xl mx-auto px-4">
+                    <button
+                        onClick={() => router.push("/dashboard/transactions")}
+                        className="inline-flex items-center space-x-2 text-white hover:text-orange-100 mb-4 transition"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                        <span>Kembali</span>
+                    </button>
+                    <h1 className="text-4xl font-bold mb-2">
+                        Detail Transaksi
+                    </h1>
+                    <p className="text-blue-100 text-lg">
+                        Lihat dan kelola transaksi event Anda
+                    </p>
+                </div>
+            </div>
 
-                <div className="space-y-6">
-                    <Card>
-                        <div className="flex items-start justify-between mb-6">
-                            <div>
-                                <h1 className="text-2xl font-bold mb-2">
-                                    {transaction.event?.title}
-                                </h1>
-                                <p className="text-sm text-gray-500">
-                                    ID Transaksi: TRX-
-                                    {transaction.id.toString().padStart(6, "0")}
-                                </p>
-                            </div>
-                            {getStatusBadge(transaction.status)}
-                        </div>
+            {/* Content */}
+            <div className="max-w-3xl mx-auto py-12 px-6">
+                <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
+                    {/* 🧾 Info Event */}
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            {transaction.event?.title}
+                        </h2>
+                        <Badge
+                            color={
+                                transaction.status === "PAID"
+                                    ? "success"
+                                    : transaction.status ===
+                                      "PENDING_CONFIRMATION"
+                                    ? "warning"
+                                    : transaction.status === "REJECTED"
+                                    ? "failure"
+                                    : "gray"
+                            }
+                        >
+                            {transaction.status.replaceAll("_", " ")}
+                        </Badge>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <h3 className="font-semibold mb-3">
-                                    Detail Event
-                                </h3>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex items-start">
-                                        <MapPin className="mr-2 h-4 w-4 mt-0.5 text-gray-500 flex-shrink-0" />
-                                        <span>
-                                            {transaction.event?.location}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <Calendar className="mr-2 h-4 w-4 text-gray-500" />
-                                        {transaction.event &&
-                                            new Date(
-                                                transaction.event.startDate
-                                            ).toLocaleDateString("id-ID", {
-                                                day: "numeric",
-                                                month: "long",
-                                                year: "numeric",
-                                            })}
-                                    </div>
-                                    <div className="flex items-center">
-                                        <Ticket className="mr-2 h-4 w-4 text-gray-500" />
-                                        {transaction.event?.category.replace(
-                                            "_",
-                                            " "
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                    <div className="text-gray-600 space-y-2 text-sm">
+                        <p className="flex items-center">
+                            <MapPin className="w-4 h-4 mr-2" />
+                            {transaction.event?.location}
+                        </p>
+                        <p className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {formatDate(transaction.event?.startDate ?? "")}
+                        </p>
+                    </div>
 
-                            <div>
-                                <h3 className="font-semibold mb-3">
-                                    Detail Pembelian
-                                </h3>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">
-                                            Jumlah Tiket:
-                                        </span>
-                                        <span className="font-medium">
-                                            {transaction.quantity} Tiket
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">
-                                            Harga per Tiket:
-                                        </span>
-                                        <span className="font-medium">
-                                            Rp{" "}
-                                            {transaction.event?.price.toLocaleString(
-                                                "id-ID"
-                                            )}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between pt-2 border-t">
-                                        <span className="font-semibold">
-                                            Total:
-                                        </span>
-                                        <span className="font-bold text-blue-600 text-lg">
-                                            Rp{" "}
-                                            {transaction.totalPrice.toLocaleString(
-                                                "id-ID"
-                                            )}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    {/* 👤 Info Pembeli */}
+                    <div className="mt-6 border-t pt-4">
+                        <h3 className="font-semibold mb-3 flex items-center">
+                            <User className="w-4 h-4 mr-2" /> Informasi Pembeli
+                        </h3>
+                        <p className="text-sm text-gray-700">
+                            <span className="font-semibold">
+                                {transaction.user?.firstName}{" "}
+                                {transaction.user?.lastName}
+                            </span>
+                        </p>
+                        <p className="text-sm text-gray-600">
+                            {transaction.user?.email}
+                        </p>
+                    </div>
 
-                        <div className="border-t pt-6">
-                            <h3 className="font-semibold mb-3">
-                                Informasi Pembayaran
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="flex items-center">
-                                    <CreditCard className="mr-2 h-4 w-4 text-gray-500" />
-                                    <span className="text-sm">
-                                        Metode:{" "}
-                                        {getPaymentMethodLabel(
-                                            transaction.paymentMethod
-                                        )}
-                                    </span>
-                                </div>
-                                {transaction.status === "PENDING" && (
-                                    <div className="flex items-center text-orange-600">
-                                        <Clock className="mr-2 h-4 w-4" />
-                                        <span className="text-sm">
-                                            Kadaluarsa:{" "}
-                                            {new Date(
-                                                transaction.expiredAt
-                                            ).toLocaleString("id-ID", {
-                                                day: "numeric",
-                                                month: "long",
-                                                year: "numeric",
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </Card>
+                    {/* 💳 Info Pembayaran */}
+                    <div className="mt-6 border-t pt-4">
+                        <h3 className="font-semibold mb-3 flex items-center">
+                            <CreditCard className="w-4 h-4 mr-2" /> Detail
+                            Pembayaran
+                        </h3>
 
-                    {transaction.status === "PENDING" &&
-                        !transaction.paymentProof &&
-                        !isOrganizer && (
-                            <Card>
-                                <h3 className="font-semibold mb-4">
-                                    Upload Bukti Pembayaran
-                                </h3>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Silakan upload bukti transfer Anda. Format
-                                    yang diterima: JPG, PNG, PDF
-                                </p>
-                                <Formik
-                                    initialValues={{ paymentProof: "" }}
-                                    validationSchema={PaymentProofSchema}
-                                    onSubmit={handleUploadProof}
-                                >
-                                    {({ isSubmitting, errors, touched }) => (
-                                        <Form className="space-y-4">
-                                            <div>
-                                                <Label htmlFor="paymentProof">
-                                                    URL Bukti Pembayaran
-                                                </Label>
-                                                <Field
-                                                    as={TextInput}
-                                                    id="paymentProof"
-                                                    name="paymentProof"
-                                                    type="url"
-                                                    placeholder="https://example.com/bukti-bayar.jpg"
-                                                    color={
-                                                        errors.paymentProof &&
-                                                        touched.paymentProof
-                                                            ? "failure"
-                                                            : undefined
-                                                    }
-                                                />
-                                                <ErrorMessage
-                                                    name="paymentProof"
-                                                    component="p"
-                                                    className="text-red-600 text-sm mt-1"
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    Masukkan URL gambar bukti
-                                                    pembayaran Anda
-                                                </p>
-                                            </div>
-                                            <Button
-                                                type="submit"
-                                                disabled={isSubmitting}
-                                            >
-                                                <Upload className="mr-2 h-4 w-4" />
-                                                {isSubmitting
-                                                    ? "Mengupload..."
-                                                    : "Upload Bukti Pembayaran"}
-                                            </Button>
-                                        </Form>
+                        <ul className="text-sm text-gray-700 space-y-1">
+                            <li>
+                                <Ticket className="inline w-4 h-4 mr-1 text-blue-500" />
+                                Jumlah Tiket:{" "}
+                                <span className="font-semibold">
+                                    {transaction.ticketQuantity}
+                                </span>
+                            </li>
+                            <li>
+                                <Clock className="inline w-4 h-4 mr-1 text-blue-500" />
+                                Tanggal Transaksi:{" "}
+                                {formatDate(transaction.createdAt)}
+                            </li>
+                            <li>
+                                Metode Pembayaran:{" "}
+                                <span className="font-semibold uppercase">
+                                    {transaction.paymentMethod || "-"}
+                                </span>
+                            </li>
+                            <li>
+                                Total Harga:{" "}
+                                <span className="font-bold text-blue-600">
+                                    Rp{" "}
+                                    {transaction.finalPrice.toLocaleString(
+                                        "id-ID"
                                     )}
-                                </Formik>
-                            </Card>
-                        )}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
 
-                    {transaction.paymentProof && (
-                        <Card>
-                            <h3 className="font-semibold mb-4">
-                                Bukti Pembayaran
-                            </h3>
-                            <div className="bg-gray-100 p-4 rounded-lg">
+                    {/* 📎 Bukti Pembayaran */}
+                    <div className="mt-6 border-t pt-4">
+                        <h3 className="font-semibold mb-3">Bukti Pembayaran</h3>
+                        {paymentProofUrl ? (
+                            paymentProofUrl.endsWith(".pdf") ? (
+                                <a
+                                    href={paymentProofUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline text-sm"
+                                >
+                                    Lihat Bukti Pembayaran (PDF)
+                                </a>
+                            ) : (
                                 <img
-                                    src={transaction.paymentProof}
+                                    src={paymentProofUrl}
                                     alt="Bukti Pembayaran"
-                                    className="max-w-full h-auto rounded"
+                                    className="rounded-lg border max-w-full shadow-sm"
                                 />
-                            </div>
-                            {isOrganizer &&
-                                transaction.status === "PENDING" && (
-                                    <div className="flex gap-4 mt-4">
-                                        <Button
-                                            color="success"
-                                            onClick={handleApprove}
-                                            className="flex-1"
-                                        >
-                                            <CheckCircle className="mr-2 h-4 w-4" />
-                                            Approve Pembayaran
-                                        </Button>
-                                        <Button
-                                            color="failure"
-                                            onClick={handleReject}
-                                            className="flex-1"
-                                        >
-                                            <XCircle className="mr-2 h-4 w-4" />
-                                            Tolak Pembayaran
-                                        </Button>
-                                    </div>
-                                )}
-                        </Card>
-                    )}
+                            )
+                        ) : (
+                            <p className="text-gray-500 text-sm">
+                                Belum ada bukti pembayaran.
+                            </p>
+                        )}
+                    </div>
 
-                    {transaction.status === "PAID" && (
-                        <Card>
-                            <div className="flex items-center justify-center py-8">
-                                <div className="text-center">
-                                    <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                                    <h3 className="text-xl font-semibold mb-2">
-                                        Pembayaran Berhasil!
-                                    </h3>
-                                    <p className="text-gray-600 mb-4">
-                                        Tiket Anda telah aktif dan siap
-                                        digunakan
-                                    </p>
-                                    <div className="bg-gray-100 p-6 rounded-lg">
-                                        <p className="text-sm text-gray-600 mb-2">
-                                            Kode Tiket:
-                                        </p>
-                                        <p className="text-2xl font-mono font-bold">
-                                            TKT-
-                                            {transaction.id
-                                                .toString()
-                                                .padStart(6, "0")}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                    )}
-
-                    {transaction.status === "REJECTED" && (
-                        <Card>
-                            <div className="flex items-center justify-center py-8">
-                                <div className="text-center">
-                                    <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                                    <h3 className="text-xl font-semibold mb-2">
-                                        Pembayaran Ditolak
-                                    </h3>
-                                    <p className="text-gray-600">
-                                        Bukti pembayaran Anda ditolak. Silakan
-                                        upload ulang bukti yang valid.
-                                    </p>
-                                </div>
-                            </div>
-                        </Card>
+                    {/* ✅ Tombol Approve / Reject */}
+                    {transaction.status === "PENDING_CONFIRMATION" && (
+                        <div className="flex gap-4 mt-6">
+                            <Button
+                                color="green"
+                                onClick={() => handleStatusUpdate("PAID")}
+                                className="flex-1"
+                            >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Terima Pembayaran
+                            </Button>
+                            <Button
+                                color="red"
+                                onClick={() => handleStatusUpdate("REJECTED")}
+                                className="flex-1"
+                            >
+                                <XCircle className="mr-2 h-4 w-4" />
+                                Tolak Pembayaran
+                            </Button>
+                        </div>
                     )}
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

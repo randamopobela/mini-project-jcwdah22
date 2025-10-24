@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import API from "@/lib/axiosInstance";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface IEventData {
     id: string;
@@ -45,6 +46,7 @@ const eventCategories = [
 ];
 
 export default function HomePage() {
+    const router = useRouter();
     const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const [location, setLocation] = useState("");
@@ -86,6 +88,15 @@ export default function HomePage() {
                   minimumFractionDigits: 0,
               }).format(value)
             : "Gratis";
+
+    const handleGetTickets = (eventId: number) => {
+        if (!user) {
+            toast.info("Silakan login terlebih dahulu untuk membeli tiket.");
+            router.push("/login");
+            return;
+        }
+        router.push(`/purchase/${eventId}/buy`);
+    };
 
     return (
         <div className="bg-gray-50">
@@ -163,7 +174,6 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* FEATURED EVENTS */}
             <section className="py-12 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center mb-8">
@@ -189,7 +199,7 @@ export default function HomePage() {
                         </p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {events.map((event) => (
+                            {events.map((event: any) => (
                                 <Card
                                     key={event.id}
                                     className="hover:shadow-xl transition-shadow cursor-pointer"
@@ -201,9 +211,11 @@ export default function HomePage() {
                                             {event.category}
                                         </Badge>
                                     </div>
+
                                     <h5 className="text-lg font-bold tracking-tight text-gray-900">
                                         {event.title}
                                     </h5>
+
                                     <div className="space-y-2 text-sm text-gray-600">
                                         <div className="flex items-center">
                                             <Calendar className="h-4 w-4 mr-2" />
@@ -224,38 +236,25 @@ export default function HomePage() {
                                             </span>
                                         </div>
                                     </div>
+
                                     <div className="mt-4 pt-4 border-t flex justify-between items-center">
                                         <span className="text-xl font-bold text-blue-600">
                                             {formatCurrency(event.price)}
                                         </span>
-                                        <Link href={`/events/${event.id}`}>
-                                            <Button size="sm" color="green">
-                                                Get tickets
-                                            </Button>
-                                        </Link>
+                                        <Button
+                                            size="sm"
+                                            color="green"
+                                            onClick={() =>
+                                                handleGetTickets(event.id)
+                                            }
+                                        >
+                                            Get tickets
+                                        </Button>
                                     </div>
                                 </Card>
                             ))}
                         </div>
                     )}
-                </div>
-            </section>
-
-            {/* CTA SECTION */}
-            <section className="py-16 bg-orange-600 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Make your running event happen
-                    </h2>
-                    <p className="text-xl text-orange-100 mb-8">
-                        Create and manage events with ease using our platform
-                    </p>
-                    <Link href={user ? "/dashboard" : "/login"}>
-                        <Button size="xl" color="light">
-                            Create an event
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    </Link>
                 </div>
             </section>
 

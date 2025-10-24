@@ -1,6 +1,4 @@
-// src/services/events.service.ts
-
-import { EventCategory } from "@prisma/client"; // <-- Impor enum dari Prisma Client
+import { EventCategory, EventStatus, Prisma } from "../generated/prisma";
 import { prisma } from "../config/config";
 
 // Tipe data untuk query agar lebih rapi
@@ -20,7 +18,9 @@ class EventsService {
     const { search, category, location, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    const whereClause: any = { status: "PUBLISHED" };
+    const whereClause: Prisma.EventWhereInput = {
+      status: EventStatus.PUBLISHED,
+    };
 
     if (search) {
       whereClause.title = { contains: search, mode: "insensitive" };
@@ -55,7 +55,7 @@ class EventsService {
    */
   async findPublicById(id: number) {
     return prisma.event.findFirst({
-      where: { id, status: "PUBLISHED" },
+      where: { id, status: EventStatus.PUBLISHED },
       include: {
         // PERUBAHAN: Sesuaikan include dengan skema baru
         organizer: { select: { id: true, userName: true } },
@@ -77,11 +77,11 @@ class EventsService {
    */
   async findUniqueLocations() {
     const locations = await prisma.event.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: EventStatus.PUBLISHED },
       select: { location: true },
       distinct: ["location"],
     });
-    return locations.map((item) => item.location);
+    return locations.map(({ location }) => location);
   }
 }
 

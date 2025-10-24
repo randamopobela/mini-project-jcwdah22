@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { PlusCircle, Calendar, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import API from "@/lib/axiosInstance";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function VouchersPage() {
     const router = useRouter();
+    const { id } = useParams() as { id: string };
     const { user, isLoading } = useAuth();
     const [vouchers, setVouchers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -20,7 +21,7 @@ export default function VouchersPage() {
     useEffect(() => {
         const fetchVouchers = async () => {
             try {
-                const res = await API.get("/vouchers", {
+                const res = await API.get(`/myevent/${id}/vouchers`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem(
                             "token"
@@ -28,14 +29,14 @@ export default function VouchersPage() {
                     },
                 });
                 setVouchers(res.data.data);
-            } catch {
-                toast.error("Gagal memuat daftar voucher.");
-            } finally {
-                setLoading(false);
+            } catch (err) {
+                toast.error("Gagal memuat voucher untuk event ini.");
             }
         };
         fetchVouchers();
     }, []);
+
+    console.log(vouchers);
 
     if (loading)
         return (
@@ -85,52 +86,128 @@ export default function VouchersPage() {
                         Belum ada voucher yang dibuat.
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {vouchers.map((v) => (
                             <div
                                 key={v.id}
-                                className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition"
+                                className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-all duration-200"
                             >
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                                    {v.voucherCode}
-                                </h3>
-                                <p className="text-gray-600 mb-4">
-                                    Diskon: Rp{" "}
-                                    {v.discountAmount.toLocaleString("id-ID")}{" "}
-                                    <br />
-                                    Min. Pembelian: Rp{" "}
-                                    {v.minimalPurchase.toLocaleString(
-                                        "id-ID"
-                                    )}{" "}
-                                    <br />
-                                    Maks. Diskon: Rp{" "}
-                                    {v.maximalDiscount.toLocaleString("id-ID")}
-                                </p>
-                                <div className="flex items-center justify-between text-sm text-gray-500">
-                                    <div className="flex items-center space-x-1">
-                                        <Calendar className="h-4 w-4 text-amber-500" />
-                                        <span>
-                                            {new Date(
-                                                v.startDate
-                                            ).toLocaleDateString("id-ID")}{" "}
-                                            -{" "}
-                                            {new Date(
-                                                v.endDate
-                                            ).toLocaleDateString("id-ID")}
-                                        </span>
-                                    </div>
-                                    <div
+                                {/* Header */}
+                                <div className="flex justify-between items-start mb-3">
+                                    <h3 className="text-xl font-bold text-gray-900">
+                                        {v.voucherCode}
+                                    </h3>
+                                    <span
                                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                             v.isActive
-                                                ? "bg-green-100 text-green-800"
-                                                : "bg-gray-100 text-gray-800"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-gray-100 text-gray-600"
                                         }`}
                                     >
                                         {v.isActive ? "Aktif" : "Tidak Aktif"}
+                                    </span>
+                                </div>
+
+                                {/* Detail Diskon */}
+                                <div className="text-gray-700 text-sm space-y-2 mb-4">
+                                    <p>
+                                        <span className="font-semibold">
+                                            Nominal Diskon:
+                                        </span>{" "}
+                                        Rp{" "}
+                                        {v.discountAmount.toLocaleString(
+                                            "id-ID"
+                                        )}
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">
+                                            Minimal Pembelian:
+                                        </span>{" "}
+                                        Rp{" "}
+                                        {v.minimalPurchase.toLocaleString(
+                                            "id-ID"
+                                        )}
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">
+                                            Maksimal Diskon:
+                                        </span>{" "}
+                                        Rp{" "}
+                                        {v.maximalDiscount.toLocaleString(
+                                            "id-ID"
+                                        )}
+                                    </p>
+                                </div>
+
+                                {/* Tanggal Berlaku */}
+                                <div className="flex items-center text-sm text-gray-500 mb-4">
+                                    <Calendar className="h-4 w-4 text-amber-500 mr-2" />
+                                    <span>
+                                        {new Date(
+                                            v.startDate
+                                        ).toLocaleDateString("id-ID", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric",
+                                        })}{" "}
+                                        –{" "}
+                                        {new Date(v.endDate).toLocaleDateString(
+                                            "id-ID",
+                                            {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                            }
+                                        )}
+                                    </span>
+                                </div>
+
+                                {/* Info Event (jika ada relasi event di API) */}
+                                {v.event && (
+                                    <div className="mt-2 border-t pt-3">
+                                        <p className="text-sm text-gray-500">
+                                            <span className="font-semibold text-gray-700">
+                                                {v.event.title}
+                                            </span>{" "}
+                                            • {v.event.location}
+                                        </p>
                                     </div>
+                                )}
+
+                                {/* Tombol Aksi */}
+                                <div className="mt-6 flex justify-between items-center">
+                                    <button
+                                        className="px-4 py-2 text-sm bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 font-medium transition"
+                                        onClick={() =>
+                                            console.log("Edit voucher", v.id)
+                                        }
+                                    >
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        className={`px-4 py-2 text-sm rounded-lg font-medium transition ${
+                                            v.isActive
+                                                ? "bg-red-50 text-red-600 hover:bg-red-100"
+                                                : "bg-green-50 text-green-700 hover:bg-green-100"
+                                        }`}
+                                        onClick={() =>
+                                            console.log("Toggle active", v.id)
+                                        }
+                                    >
+                                        {v.isActive
+                                            ? "Nonaktifkan"
+                                            : "Aktifkan"}
+                                    </button>
                                 </div>
                             </div>
                         ))}
+
+                        {vouchers.length === 0 && (
+                            <div className="col-span-full text-center py-12 text-gray-500">
+                                Belum ada voucher yang dibuat.
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
