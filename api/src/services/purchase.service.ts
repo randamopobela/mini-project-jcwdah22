@@ -3,6 +3,34 @@ import { prisma } from "../config/config";
 import { responseHandler } from "../helpers/response.handler";
 
 class PurchaseService {
+    async create(req: Request, res: Response) {
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId)
+                return responseHandler(res, "User tidak valid", null, 401);
+
+            const data = await prisma.transaction.create({
+                data: {
+                    userId: userId,
+                    eventId: req.body.eventId,
+                    ticketQuantity: req.body.ticketQuantity,
+                    totalPrice: req.body.totalPrice,
+                    discountPoints: req.body.discountPoints,
+                    discountVouchers: req.body.discountVouchers,
+                    discountCoupons: req.body.discountCoupons,
+                    finalPrice: req.body.finalPrice,
+                    status: req.body.status,
+                    paymentProof: req.body.paymentProof,
+                    paymentMethod: req.body.paymentMethod,
+                    expiredAt: req.body.expiredAt,
+                },
+            });
+
+            return responseHandler(res, "Transaksi berhasil dibuat", data, 201);
+        } catch (error: any) {
+            return responseHandler(res, error.message, null, 400);
+        }
+    }
     async findByUser(req: Request, res: Response) {
         try {
             const userId = (req as any).user?.id;

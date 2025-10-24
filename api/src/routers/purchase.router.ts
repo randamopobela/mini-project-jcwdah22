@@ -8,8 +8,8 @@ export const purchaseRouter = () => {
 
     router.use(verifyToken);
 
+    router.post("/create", purchaseController.create);
     router.get("/", purchaseController.findByUser);
-
     router.get("/:id", purchaseController.findById);
 
     router.patch(

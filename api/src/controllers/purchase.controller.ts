@@ -1,10 +1,25 @@
 import { Request, Response, NextFunction } from "express";
 import purchaseService from "../services/purchase.service";
+import { responseHandler } from "../helpers/response.handler";
 
 class PurchaseController {
+    async create(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await purchaseService.create(req, res);
+            responseHandler(res, "Transaksi berhasil dibuat", data, 201);
+        } catch (error) {
+            next(error);
+        }
+    }
     async findByUser(req: Request, res: Response, next: NextFunction) {
         try {
-            await purchaseService.findByUser(req, res);
+            const data = await purchaseService.findByUser(req, res);
+            responseHandler(
+                res,
+                "Detail transaksi berhasil diambil",
+                data,
+                200
+            );
         } catch (error) {
             next(error);
         }
