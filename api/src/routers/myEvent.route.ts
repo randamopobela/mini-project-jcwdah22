@@ -4,49 +4,62 @@ import { organizerGuard, verifyToken } from "../middlewares/auth.middleware";
 import { uploader } from "../middlewares/express/uploader";
 
 export const myeventRouter = () => {
-  const router = Router();
+    const router = Router();
 
-  router.use(verifyToken, organizerGuard);
+    router.use(verifyToken);
+    router.use(organizerGuard);
 
-  router.post(
-    "/create",
-    uploader("IMG", "/images").single("file"),
-    myeventController.createEvent
-  );
+    router.post(
+        "/create",
+        uploader("IMG", "/images").single("eventPicture"),
+        myeventController.createEvent
+    );
 
-  router.get("/all", myeventController.getAllmyEvents);
+    router.get("/all", myeventController.getAllmyEvents);
 
-  router.get("/:id/sales-report", myeventController.getSalesReport);
+    router.get("/:id/sales-report", myeventController.getSalesReport);
 
-  router.get("/:id/attendees", myeventController.getAttendeesByEvent);
+    router.get("/:id/attendees", myeventController.getAttendeesByEvent);
 
-  router.get("/:id/dashboard-stats", myeventController.getDashboardStats);
+    router.patch(
+        "/:id",
+        uploader("IMG", "/images").single("eventPicture"),
+        myeventController.editmyEvent
+    );
+    router.get("/:id/dashboard-stats", myeventController.getDashboardStats);
 
-  router.get("/:id/transactions", myeventController.getTransactionsByEvent);
+    router.get("transactions", myeventController.getMyTransactions);
 
-  router.patch(
-    "/transactions/:transactionId/accept",
-    myeventController.acceptTransaction
-  );
+    router.get("/:id/transactions", myeventController.getTransactionsByEvent);
 
-  router.patch(
-    "/transactions/:transactionId/reject",
-    myeventController.rejectTransaction
-  );
+    router.patch("/:id/cancel", myeventController.cancelEvent);
 
-  router.get("/:id", myeventController.getMyEventById);
+    router.delete("/:id", myeventController.deletemyEvent);
+    router.patch(
+        "/transactions/:transactionId/accept",
+        myeventController.acceptTransaction
+    );
 
-  router.patch("/:id/publish", myeventController.publishmyEvent);
+    router.patch(
+        "/transactions/:transactionId/reject",
+        myeventController.rejectTransaction
+    );
 
-  router.patch(
-    "/:id",
-    uploader("IMG", "/images").single("file"),
-    myeventController.editmyEvent
-  );
+    router.get("/:id", myeventController.getMyEventById);
 
-  router.post("/:id/vouchers", myeventController.createVoucher);
+    router.patch("/:id/publish", myeventController.publishmyEvent);
 
-  router.delete("/:id", myeventController.deletemyEvent);
+    router.patch(
+        "/:id",
+        uploader("IMG", "/images").single("file"),
+        myeventController.editmyEvent
+    );
 
-  return router;
+    router.post("/:id/vouchers", myeventController.createVoucher);
+
+    // router.get("/:id/vouchers", myeventController.getVouchersByEvent);
+
+    router.delete("/:id", myeventController.deletemyEvent);
+
+    return router;
 };

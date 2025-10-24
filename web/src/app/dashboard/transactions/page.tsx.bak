@@ -1,0 +1,151 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Eye, ArrowLeft } from "lucide-react";
+import API from "@/lib/axiosInstance";
+
+export default function TransactionsPage() {
+  const router = useRouter();
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const statusStyles: Record<string, string> = {
+    PENDING: "bg-yellow-100 text-yellow-700",
+    PAID: "bg-green-100 text-green-700",
+    FAILED: "bg-red-100 text-red-700",
+    REFUNDED: "bg-gray-100 text-gray-700",
+  };
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await API.get("/myevent/transactions", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setTransactions(res.data.data);
+      } catch (error) {
+        toast.error("Gagal memuat data transaksi.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Memuat transaksi...
+      </div>
+    );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-500 text-white py-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="inline-flex items-center space-x-2 text-white hover:text-emerald-100 mb-4 transition"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Kembali ke Dashboard</span>
+          </button>
+          <h1 className="text-4xl font-bold mb-2">Daftar Transaksi</h1>
+          <p className="text-emerald-100 text-lg">
+            Pantau seluruh transaksi peserta pada event Anda
+          </p>
+        </div>
+      </div>
+
+      {/* Tabel Transaksi */}
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-100">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Peserta
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Event
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Tanggal
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Jumlah Bayar
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Status
+                </th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-700">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {transactions.map((trx) => (
+                <tr
+                  key={trx.id}
+                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-4 px-4">
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {trx.user?.firstName} {trx.user?.lastName || ""}
+                      </p>
+                      <p className="text-sm text-gray-500">{trx.user?.email}</p>
+                    </div>
+                  </td>
+
+                  <td className="py-4 px-4 text-gray-700">{trx.event?.title}</td>
+
+                  <td className="py-4 px-4 text-gray-700">
+                    {new Date(trx.createdAt).toLocaleDateString("id-ID")}
+                  </td>
+
+                  <td className="py-4 px-4 text-gray-700">
+                    Rp {trx.amount.toLocaleString("id-ID")}
+                  </td>
+
+                  <td className="py-4 px-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        statusStyles[trx.status as keyof typeof statusStyles]
+                      }`}
+                    >
+                      {trx.status}
+                    </span>
+                  </td>
+
+                  <td className="py-4 px-4">
+                    <button
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                      onClick={() =>
+                        router.push(`/dashboard/transactions/${trx.id}`)
+                      }
+                    >
+                      <Eye className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {transactions.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              Belum ada transaksi tercatat.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

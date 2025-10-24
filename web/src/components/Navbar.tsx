@@ -76,9 +76,7 @@ export default function NavbarComponent() {
                         {user.role === "ORGANIZER" && (
                             <NavbarLink href="/dashboard">Dashboard</NavbarLink>
                         )}
-                        <NavbarLink href="/transactions">
-                            Transaction
-                        </NavbarLink>
+                        <NavbarLink href="/purchase">Pembelian</NavbarLink>
                         <NavbarLink href="/about">About</NavbarLink>
                     </>
                 ) : (

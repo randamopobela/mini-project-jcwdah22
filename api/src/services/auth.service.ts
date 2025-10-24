@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { PointsLogType, Prisma } from "@prisma/client";
+import { PointsLogType } from "../generated/prisma";
 import { jwt_reset_secret, jwtSecret, prisma } from "../config/config";
 import { compare } from "bcrypt";
 import { ErrorHandler } from "../helpers/response.handler";

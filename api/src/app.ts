@@ -7,6 +7,8 @@ import { authRouter } from "./routers/auth.router";
 import { eventRouter } from "./routers/events.router";
 import { myeventRouter } from "./routers/myEvent.route";
 import { userRouter } from "./routers/user.router";
+import { transactionRouter } from "./routers/transaction.router";
+import { purchaseRouter } from "./routers/purchase.router";
 
 export class App {
     private app: Application;
@@ -23,6 +25,8 @@ export class App {
         this.app.use("/api/events", eventRouter());
         this.app.use("/api/myevent", myeventRouter());
         this.app.use("/api/user", userRouter());
+        this.app.use("/api/transaction", transactionRouter());
+        this.app.use("/api/purchase", purchaseRouter());
     }
 
     private configure() {

@@ -58,7 +58,7 @@ const eventSchema = Yup.object().shape({
     totalSlots: Yup.number()
         .min(1, "Minimal 1 slot")
         .required("Total slot harus diisi"),
-    eventPicture: Yup.string().nullable(),
+    eventPicture: Yup.mixed().nullable().required("Gambar event harus ada"),
 });
 
 const categories = [
@@ -74,6 +74,8 @@ const categories = [
 
 export default function CreateEventPage() {
     const [eventPicture, setEventPicture] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
     const { user, isLoading } = useAuth();
     const router = useRouter();
 
@@ -89,9 +91,10 @@ export default function CreateEventPage() {
     ) => {
         const file = e.target.files?.[0];
         if (file) {
-            setFieldValue("eventPicture", file); // simpan file asli
+            setSelectedFile(file); // simpan di state, bukan di Formik
+            setFieldValue("eventPicture", file.name); // optional: hanya untuk menampilkan nama file di Formik
 
-            // hanya untuk preview
+            // preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setEventPicture(reader.result as string);
@@ -118,22 +121,25 @@ export default function CreateEventPage() {
             formData.append("organizerId", user?.id || "");
 
             // tambahkan gambar jika ada
-            if (values.eventPicture instanceof File) {
-                formData.append("eventPicture", values.eventPicture);
+            if (selectedFile) {
+                formData.append("eventPicture", selectedFile); //pastikan field cocok dengan .single("eventPicture")
+            }
+
+            for (const [key, val] of formData.entries()) {
+                console.log(`${key}:`, val);
             }
 
             await API.post("/myevent/create", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 
             toast.success("Event berhasil dibuat!");
-            router.push("/dashboard");
+            router.push("/dashboard/events");
         } catch (error: any) {
             console.error(error);
-            toast.error("Gagal membuat event. Silakan coba lagi.");
+            toast.error("Gagal membuat event. Silakan coba lagi.", error);
         }
     };
 
@@ -151,11 +157,11 @@ export default function CreateEventPage() {
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 text-white py-12">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <Link
-                        href="/dashboard"
+                        href="/dashboard/events"
                         className="inline-flex items-center space-x-2 text-white hover:text-blue-100 mb-4 transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5" />
-                        <span>Kembali ke Dashboard</span>
+                        <span>Kembali</span>
                     </Link>
                     <h1 className="text-4xl font-bold mb-2">Buat Event Baru</h1>
                     <p className="text-blue-100 text-lg">
@@ -287,6 +293,7 @@ export default function CreateEventPage() {
                                             >
                                                 Gambar Event
                                             </label>
+
                                             <div className="flex items-center space-x-4">
                                                 {eventPicture && (
                                                     <img
@@ -295,7 +302,16 @@ export default function CreateEventPage() {
                                                         className="w-32 h-32 object-cover rounded-lg border"
                                                     />
                                                 )}
-                                                <label className="flex items-center justify-center px-6 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+
+                                                <label
+                                                    className={`flex items-center justify-center px-6 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors
+                                                    ${
+                                                        touched.eventPicture &&
+                                                        errors.eventPicture
+                                                            ? "border-red-500 hover:border-red-500"
+                                                            : "border-gray-300 hover:border-primary-500"
+                                                    }`}
+                                                >
                                                     <ImageIcon className="h-5 w-5 text-gray-400 mr-2" />
                                                     <span className="text-gray-600">
                                                         {eventPicture
@@ -316,6 +332,12 @@ export default function CreateEventPage() {
                                                     />
                                                 </label>
                                             </div>
+
+                                            <ErrorMessage
+                                                name="eventPicture"
+                                                component="div"
+                                                className="text-red-500 text-sm mt-1"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -523,7 +545,7 @@ export default function CreateEventPage() {
                                 {/* Tombol Aksi */}
                                 <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                                     <Link
-                                        href="/dashboard"
+                                        href="/dashboard/events"
                                         className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-semibold"
                                     >
                                         Batal
