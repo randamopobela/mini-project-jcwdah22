@@ -1,4 +1,9 @@
-import { EventCategory, EventStatus, Prisma } from "../generated/prisma";
+import {
+    EventCategory,
+    EventStatus,
+    Prisma,
+    TransactionStatus,
+} from "../generated/prisma";
 import { prisma } from "../config/config";
 import { ErrorHandler } from "../helpers/response.handler";
 import {
@@ -92,7 +97,7 @@ class MyEventsService {
 
     //    Mengedit event milik seorang organizer.
     async editmyEvent(id: number, organizerId: string, data: IEventUpdateData) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // 1. Validasi kepemilikan event
             const event = await tx.event.findFirst({
                 where: { id, organizerId },
@@ -274,7 +279,7 @@ class MyEventsService {
     }
 
     async acceptTransaction(transactionId: number, organizerId: string) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // 1. Ambil data transaksi beserta data event-nya untuk validasi
             const transaction = await tx.transaction.findUnique({
                 where: { id: transactionId },
@@ -348,7 +353,7 @@ class MyEventsService {
     }
 
     async rejectTransaction(transactionId: number, organizerId: string) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // 1. Ambil data transaksi beserta data event-nya untuk validasi
             const transaction = await tx.transaction.findUnique({
                 where: { id: transactionId },
@@ -568,7 +573,7 @@ class MyEventsService {
         const paidTransactions = await prisma.transaction.findMany({
             where: {
                 eventId: eventId,
-                status: "PAID",
+                status: TransactionStatus.PAID,
             },
             select: {
                 createdAt: true,
@@ -580,20 +585,23 @@ class MyEventsService {
         });
 
         // 3. Proses data di JavaScript untuk mengelompokkan berdasarkan periode
-        const salesData = paidTransactions.reduce((acc, transaction) => {
-            // Buat kunci grup berdasarkan periode (misal: '2025-10-16' untuk harian)
-            const dateKey = transaction.createdAt
-                .toISOString()
-                .slice(0, period === "monthly" ? 7 : 10);
+        const salesData = paidTransactions.reduce<Record<string, number>>(
+            (acc, transaction) => {
+                // Buat kunci grup berdasarkan periode (misal: '2025-10-16' untuk harian)
+                const dateKey = transaction.createdAt
+                    .toISOString()
+                    .slice(0, period === "monthly" ? 7 : 10);
 
-            // Jika kunci belum ada, inisialisasi. Jika sudah ada, tambahkan nilainya.
-            if (!acc[dateKey]) {
-                acc[dateKey] = 0;
-            }
-            acc[dateKey] += transaction.finalPrice;
+                // Jika kunci belum ada, inisialisasi. Jika sudah ada, tambahkan nilainya.
+                if (!acc[dateKey]) {
+                    acc[dateKey] = 0;
+                }
+                acc[dateKey] += transaction.finalPrice;
 
-            return acc;
-        }, {} as Record<string, number>);
+                return acc;
+            },
+            {}
+        );
 
         // 4. Ubah format objek menjadi array agar mudah dikonsumsi oleh library grafik di frontend
         const formattedReport = Object.keys(salesData).map((key) => ({

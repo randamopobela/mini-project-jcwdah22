@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/config";
 import { responseHandler } from "../helpers/response.handler";
+import type { Prisma } from "../generated/prisma";
 
 class PurchaseService {
     async findByUser(req: Request, res: Response) {
@@ -17,22 +18,27 @@ class PurchaseService {
                 orderBy: { createdAt: "desc" },
             });
 
-            const formatted = transactions.map((trx) => ({
-                id: trx.id,
-                userId: trx.userId,
-                eventId: trx.event,
-                ticketQuantity: trx.ticketQuantity,
-                totalPrice: trx.totalPrice,
-                discountPoints: trx.discountPoints,
-                discountVouchers: trx.discountVouchers,
-                discountCoupons: trx.discountCoupons,
-                finalPrice: trx.finalPrice,
-                status: trx.status,
-                paymentProof: trx.paymentProof,
-                paymentMethod: trx.paymentMethod,
-                expiredAt: trx.expiredAt,
-                createdAt: trx.createdAt,
-                updatedAt: trx.updatedAt,
+            type TransactionWithEvent = Prisma.TransactionGetPayload<{
+                include: { event: true };
+            }>;
+
+            const formatted = transactions.map((transaction: TransactionWithEvent) => ({
+                id: transaction.id,
+                userId: transaction.userId,
+                eventId: transaction.eventId,
+                event: transaction.event,
+                ticketQuantity: transaction.ticketQuantity,
+                totalPrice: transaction.totalPrice,
+                discountPoints: transaction.discountPoints,
+                discountVouchers: transaction.discountVouchers,
+                discountCoupons: transaction.discountCoupons,
+                finalPrice: transaction.finalPrice,
+                status: transaction.status,
+                paymentProof: transaction.paymentProof,
+                paymentMethod: transaction.paymentMethod,
+                expiredAt: transaction.expiredAt,
+                createdAt: transaction.createdAt,
+                updatedAt: transaction.updatedAt,
             }));
 
             return responseHandler(
@@ -72,7 +78,8 @@ class PurchaseService {
             const formatted = {
                 id: trx.id,
                 userId: trx.userId,
-                eventId: trx.event,
+                eventId: trx.eventId,
+                event: trx.event,
                 ticketQuantity: trx.ticketQuantity,
                 totalPrice: trx.totalPrice,
                 discountPoints: trx.discountPoints,

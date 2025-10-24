@@ -1,4 +1,4 @@
-import { Event, EventCategory, EventStatus } from "@prisma/client";
+import { Event, EventCategory, EventStatus } from "../generated/prisma";
 
 // Tipe data untuk input agar lebih jelas dan aman
 export interface IEventData {
