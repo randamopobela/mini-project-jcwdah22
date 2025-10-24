@@ -13,15 +13,20 @@ class PurchaseController {
     }
     async findByUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const data = await purchaseService.findByUser(req, res);
+            const data = await purchaseService.findByUser(req);
             responseHandler(
                 res,
-                "Detail transaksi berhasil diambil",
+                "Daftar transaksi berhasil diambil",
                 data,
                 200
             );
-        } catch (error) {
-            next(error);
+        } catch (error: any) {
+            responseHandler(
+                res,
+                "Gagal mengambil daftar transaksi",
+                error.message,
+                500
+            );
         }
     }
 

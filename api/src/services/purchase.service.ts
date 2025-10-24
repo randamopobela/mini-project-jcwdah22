@@ -32,57 +32,49 @@ class PurchaseService {
             return responseHandler(res, error.message, null, 400);
         }
     }
-    async findByUser(req: Request, res: Response) {
-        try {
-            const userId = (req as any).user?.id;
-            if (!userId)
-                return responseHandler(res, "User tidak valid", null, 401);
+    async findByUser(req: Request) {
+        const userId = (req as any).user?.id;
 
-            const transactions = await prisma.transaction.findMany({
-                where: { userId },
-                include: {
-                    event: true, // ambil data event agar bisa diakses di frontend
+        if (!userId) throw new Error("User tidak valid");
+
+        const transactions = await prisma.transaction.findMany({
+            where: { userId },
+            include: {
+                event: {
+                    select: {
+                        id: true,
+                        title: true,
+                        category: true,
+                        location: true,
+                        startDate: true,
+                        price: true,
+                        eventPicture: true,
+                    },
                 },
-                orderBy: { createdAt: "desc" },
-            });
+            },
+            orderBy: { createdAt: "desc" },
+        });
 
-            type TransactionWithEvent = Prisma.TransactionGetPayload<{
-                include: { event: true };
-            }>;
+        console.log(transactions);
 
-            const formatted = transactions.map((transaction: TransactionWithEvent) => ({
-                id: transaction.id,
-                userId: transaction.userId,
-                eventId: transaction.eventId,
-                event: transaction.event,
-                ticketQuantity: transaction.ticketQuantity,
-                totalPrice: transaction.totalPrice,
-                discountPoints: transaction.discountPoints,
-                discountVouchers: transaction.discountVouchers,
-                discountCoupons: transaction.discountCoupons,
-                finalPrice: transaction.finalPrice,
-                status: transaction.status,
-                paymentProof: transaction.paymentProof,
-                paymentMethod: transaction.paymentMethod,
-                expiredAt: transaction.expiredAt,
-                createdAt: transaction.createdAt,
-                updatedAt: transaction.updatedAt,
-            }));
-
-            return responseHandler(
-                res,
-                "Daftar transaksi berhasil diambil",
-                formatted,
-                200
-            );
-        } catch (error: any) {
-            return responseHandler(
-                res,
-                "Gagal mengambil daftar transaksi",
-                error.message,
-                500
-            );
-        }
+        return transactions.map((transaction) => ({
+            id: transaction.id,
+            userId: transaction.userId,
+            eventId: transaction.eventId,
+            event: transaction.event,
+            ticketQuantity: transaction.ticketQuantity,
+            totalPrice: transaction.totalPrice,
+            discountPoints: transaction.discountPoints,
+            discountVouchers: transaction.discountVouchers,
+            discountCoupons: transaction.discountCoupons,
+            finalPrice: transaction.finalPrice,
+            status: transaction.status,
+            paymentProof: transaction.paymentProof,
+            paymentMethod: transaction.paymentMethod,
+            expiredAt: transaction.expiredAt,
+            createdAt: transaction.createdAt,
+            updatedAt: transaction.updatedAt,
+        }));
     }
 
     async findById(req: Request, res: Response) {

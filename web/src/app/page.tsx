@@ -95,7 +95,7 @@ export default function HomePage() {
             router.push("/login");
             return;
         }
-        router.push(`/dashboard/events/${eventId}/buy`);
+        router.push(`/purchase/${eventId}/buy`);
     };
 
     return (

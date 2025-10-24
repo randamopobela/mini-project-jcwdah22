@@ -45,7 +45,7 @@ const handleSubmitTransaction = async (
                     values.discountCoupons),
         };
 
-        const res = await API.post("/transaction/create", payload);
+        const res = await API.post("/purchase/create", payload);
         toast.success("Pemesanan tiket berhasil!");
         router.push(`/purchase/${res.data.data.id}`);
     } catch (error: any) {
@@ -98,7 +98,7 @@ export default function BuyTicketPage() {
             {/* HEADER */}
             <div className="flex items-center gap-3 mb-8">
                 <Link
-                    href={`/events/${id}`}
+                    href={`/events`}
                     className="text-gray-600 hover:text-orange-600"
                 >
                     <ArrowLeft className="w-5 h-5" />

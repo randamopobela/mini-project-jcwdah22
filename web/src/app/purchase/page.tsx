@@ -50,6 +50,7 @@ export default function TransactionsPage() {
         }
     };
 
+    console.log(transactions);
     const filteredTransactions = transactions.filter((t) => {
         if (activeTab === 0) return true;
         if (activeTab === 1) return t.status === "AWAITING_PAYMENT";
@@ -77,7 +78,7 @@ export default function TransactionsPage() {
                         <ArrowLeft className="h-5 w-5" />
                         <span>Kembali ke Beranda</span>
                     </button>
-                    <h1 className="text-4xl font-bold mb-2">Transaksi Tiket</h1>
+                    <h1 className="text-4xl font-bold mb-2">Pembelian Tiket</h1>
                     <p className="text-blue-100 text-lg">
                         Lihat dan kelola pembelian tiket event Anda
                     </p>
@@ -135,11 +136,11 @@ export default function TransactionsPage() {
                                     {/* Gambar Event */}
                                     <img
                                         src={
-                                            transaction.eventId?.eventPicture
-                                                ? `${process.env.NEXT_PUBLIC_API_URL}${transaction.eventId.eventPicture}`
+                                            transaction.event?.eventPicture
+                                                ? `${process.env.NEXT_PUBLIC_API_URL}${transaction.event.eventPicture}`
                                                 : "https://images.pexels.com/photos/2524739/pexels-photo-2524739.jpeg?auto=compress&cs=tinysrgb&w=400"
                                         }
-                                        alt={transaction.eventId?.title}
+                                        alt={transaction.event?.title}
                                         className="w-full md:w-48 h-32 rounded-lg object-cover"
                                     />
 
@@ -148,7 +149,7 @@ export default function TransactionsPage() {
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-lg font-bold text-gray-900">
-                                                    {transaction.eventId?.title}
+                                                    {transaction.event?.title}
                                                 </h3>
                                                 <span
                                                     className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -168,15 +169,15 @@ export default function TransactionsPage() {
                                                 <p className="flex items-center">
                                                     <MapPin className="w-4 h-4 mr-2 text-blue-500" />
                                                     {
-                                                        transaction.eventId
+                                                        transaction.event
                                                             ?.location
                                                     }
                                                 </p>
                                                 <p className="flex items-center">
                                                     <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                                                    {transaction.eventId &&
+                                                    {transaction.event &&
                                                         new Date(
-                                                            transaction.eventId.startDate
+                                                            transaction.event.startDate
                                                         ).toLocaleDateString(
                                                             "id-ID",
                                                             {
@@ -238,21 +239,54 @@ export default function TransactionsPage() {
                                                 </Link>
 
                                                 {transaction.status ===
-                                                    "AWAITING_PAYMENT" &&
-                                                    !transaction.paymentProof && (
-                                                        <Link
-                                                            href={`/purchase/${transaction.id}`}
-                                                        >
-                                                            <Button
-                                                                size="sm"
-                                                                color="gray"
-                                                                className="w-full flex items-center justify-center"
+                                                    "AWAITING_PAYMENT" && (
+                                                    <>
+                                                        {/* Jika sudah ada bukti pembayaran */}
+                                                        {transaction.paymentProof ? (
+                                                            <div className="w-full text-center">
+                                                                <p className="text-sm text-gray-700 mb-2 font-medium">
+                                                                    Bukti
+                                                                    Pembayaran
+                                                                </p>
+
+                                                                {/* Tampilkan gambar atau PDF */}
+                                                                {transaction.paymentProof.endsWith(
+                                                                    ".pdf"
+                                                                ) ? (
+                                                                    <a
+                                                                        href={`${process.env.NEXT_PUBLIC_API_URL}${transaction.paymentProof}`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-blue-600 underline text-sm"
+                                                                    >
+                                                                        Lihat
+                                                                        File PDF
+                                                                    </a>
+                                                                ) : (
+                                                                    <img
+                                                                        src={`${process.env.NEXT_PUBLIC_API_URL}${transaction.paymentProof}`}
+                                                                        alt="Bukti Pembayaran"
+                                                                        className="rounded-lg w-full h-40 object-cover border border-gray-200 shadow-sm"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            // Jika belum ada bukti pembayaran
+                                                            <Link
+                                                                href={`/purchase/${transaction.id}`}
                                                             >
-                                                                <Upload className="mr-2 h-4 w-4" />
-                                                                Upload Bukti
-                                                            </Button>
-                                                        </Link>
-                                                    )}
+                                                                <Button
+                                                                    size="sm"
+                                                                    color="gray"
+                                                                    className="w-full flex items-center justify-center"
+                                                                >
+                                                                    <Upload className="mr-2 h-4 w-4" />
+                                                                    Upload Bukti
+                                                                </Button>
+                                                            </Link>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

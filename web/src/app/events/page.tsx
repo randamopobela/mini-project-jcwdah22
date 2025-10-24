@@ -40,7 +40,7 @@ export default function EventsPage() {
             router.push("/login");
             return;
         }
-        router.push(`/dashboard/events/${eventId}/buy`);
+        router.push(`/purchase/${eventId}/buy`);
     };
 
     return (

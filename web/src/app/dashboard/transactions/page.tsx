@@ -211,7 +211,7 @@ export default function TransactionsPage() {
                                             </div>
 
                                             <Link
-                                                href={`/transactions/${t.id}`}
+                                                href={`/dashboard/transactions/${t.id}`}
                                             >
                                                 <Button
                                                     size="sm"
