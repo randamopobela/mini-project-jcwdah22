@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, UploadCloud } from "lucide-react";
 import { Button, FileInput } from "flowbite-react";
 import API from "@/lib/axiosInstance";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function UploadProofPage() {
+    const { user, isLoading } = useAuth();
     const { id } = useParams() as { id: string };
     const router = useRouter();
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!isLoading && !user) router.push("/login");
+    }, [user, isLoading, router]);
 
     const handleUpload = async () => {
         if (!file) {

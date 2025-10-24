@@ -16,6 +16,7 @@ import {
 import API from "@/lib/axiosInstance";
 import { toast } from "sonner";
 import { TTransaction } from "@/types/transaction.type";
+import { useAuth } from "@/contexts/AuthContext";
 
 const statusColors: Record<string, string> = {
     AWAITING_PAYMENT: "bg-amber-100 text-amber-800",
@@ -27,10 +28,15 @@ const statusColors: Record<string, string> = {
 };
 
 export default function PurchaseDetailPage() {
+    const { user, isLoading } = useAuth();
     const { id } = useParams() as { id: string };
     const router = useRouter();
     const [transaction, setTransaction] = useState<TTransaction | null>(null);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!isLoading && !user) router.push("/login");
+    }, [user, isLoading, router]);
 
     useEffect(() => {
         fetchTransaction();

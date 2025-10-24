@@ -158,7 +158,7 @@ export default function BuyTicketPage() {
                         expiredAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 jam
                         createdAt: new Date(),
                         updatedAt: new Date(),
-                    } as TTransaction
+                    } as unknown as TTransaction
                 }
                 validationSchema={TransactionSchema}
                 onSubmit={(values, { setSubmitting }) =>
