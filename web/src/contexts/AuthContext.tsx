@@ -1,108 +1,113 @@
+// src/contexts/AuthContext.tsx (atau .js)
+
 "use client";
 
 import {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
 } from "react";
-import { TUser } from "@/types/user.type";
-import API from "@/lib/axiosInstance";
+import { TJwtPayload, TUser } from "@/types/user.type"; // Pastikan path import ini benar
+import API from "@/lib/axiosInstance"; // Pastikan path import ini benar
+import { decodeToken, getToken, removeToken, setToken } from "@/utils/auth"; // Pastikan path import ini benar
 import { jwtDecode } from "jwt-decode";
-import { decodeToken, getToken, removeToken, setToken } from "@/utils/auth";
+import axios from "axios";
 
 interface AuthContextType {
-    user: TUser | null;
-    login: (email: string, password: string) => Promise<void>;
-    updateUser: (newUser: TUser) => void;
-    // register: (data: UserRegister) => Promise<void>;
-    logout: () => void;
-    isLoading: boolean;
+  user: TUser | null;
+  login: (email: string, password: string) => Promise<void>;
+  updateUser: (newUser: TUser) => void;
+  logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<TUser | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<TUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Mulai dengan loading
 
-    useEffect(() => {
-        // Mengambil data user dari localStorage setelah refresh halaman jika ada,
-        // agar tidak perlu login lagi.
-        const token = getToken();
-        if (token) {
-            const userDecoded: TUser = jwtDecode(token);
-            setUser(userDecoded);
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      try {
+        // 🚀 DIUBAH: Decode sebagai TJwtPayload
+        const fullPayload: TJwtPayload = jwtDecode(token);
+        // Cek kedaluwarsa menggunakan payload.exp
+        if (fullPayload.exp * 1000 < Date.now()) {
+          removeToken();
+          setUser(null);
+        } else {
+          const userData: TUser = decodeToken(token); // Asumsi decodeToken mengembalikan TUser
+          setUser(userData);
+          API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         }
-        setIsLoading(false);
-    }, []);
-
-    const login = async (email: string, password: string) => {
-        try {
-            const response = await API.post(
-                "/auth/login",
-                { email, password }
-                // { withCredentials: true } // opsional, kalau backend pakai cookie
-            );
-
-            API.defaults.headers.common[
-                "Authorization"
-            ] = `Bearer ${response.data?.data?.token}`;
-
-            // Menyimpan token dari response.data.data ke dalam localStorage
-            const userToken = response.data?.data?.token;
-            setToken(userToken);
-
-            // Mengambil data user dari token
-            const userDecoded = decodeToken(userToken);
-            setUser(userDecoded);
-        } catch (error: any) {
-            const message = error.response?.data?.message;
-            throw new Error(message);
-        }
-    };
-
-    const updateUser = (newUser: TUser) => setUser(newUser);
-
-    // const register = async (data: UserRegister) => {
-    //     const mockUser: User = {
-    //         id: "1",
-    //         email: data.email,
-    //         userName: data.email.split("@")[0],
-    //         firstName: data.firstName,
-    //         lastName: data.lastName,
-    //         role: data.role as UserRole,
-    //         referralCode:
-    //             "REF" +
-    //             Math.random().toString(36).substring(2, 10).toUpperCase(),
-    //         isActive: true,
-    //         createdAt: new Date().toISOString(),
-    //         updatedAt: new Date().toISOString(),
-    //     };
-
-    //     setUser(mockUser);
-    //     localStorage.setItem("user", JSON.stringify(mockUser));
-    // };
-
-    const logout = () => {
-        setUser(null);
+      } catch {
         removeToken();
-    };
+        setUser(null);
+      }
+    }
+    setIsLoading(false); // Selesai loading inisial
+  }, []);
 
-    return (
-        <AuthContext.Provider
-            value={{ user, login, updateUser, logout, isLoading }}
-        >
-            {children}
-        </AuthContext.Provider>
-    );
+  const login = async (email: string, password: string) => {
+    // PERBAIKAN 2: Set loading saat proses login dimulai
+    setIsLoading(true);
+    try {
+      const response = await API.post("/auth/login", { email, password });
+
+      const userToken = response.data?.data?.token;
+
+      // Set default header untuk request selanjutnya
+      API.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
+
+      setToken(userToken);
+      const userDecoded = decodeToken(userToken);
+      setUser(userDecoded);
+    } catch (error) {
+      // 🚀 DIUBAH: Hapus ': any' (atau ganti dengan ': unknown')
+      let message = "Login gagal"; // Default message
+
+      // 🚀 TAMBAHKAN: Cek apakah error berasal dari Axios
+      if (axios.isAxiosError(error)) {
+        // Jika ya, kita bisa aman mengakses error.response
+        message = error.response?.data?.message || error.message;
+      } else if (error instanceof Error) {
+        // Jika error biasa, gunakan pesannya
+        message = error.message;
+      }
+
+      throw new Error(message);
+    } finally {
+      // PERBAIKAN 2: Pastikan loading selesai, baik berhasil maupun gagal
+      setIsLoading(false);
+    }
+  };
+
+  const updateUser = (newUser: TUser) => setUser(newUser);
+
+  const logout = () => {
+    setUser(null);
+    removeToken();
+    // PERBAIKAN 3: Hapus token dari default header axios
+    delete API.defaults.headers.common["Authorization"];
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{ user, login, updateUser, logout, isLoading }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }

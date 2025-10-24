@@ -366,7 +366,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/randamopobela/Documents/Purwadhika/Projects/mini-project-jcwdah22/api/src/generated/prisma",
+      "value": "C:\\webdev\\project\\mini-project-jcwdah22\\api\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -375,12 +375,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/randamopobela/Documents/Purwadhika/Projects/mini-project-jcwdah22/api/prisma/schema.prisma",
+    "sourceFilePath": "C:\\webdev\\project\\mini-project-jcwdah22\\api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

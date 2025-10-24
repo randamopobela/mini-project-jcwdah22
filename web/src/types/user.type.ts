@@ -1,20 +1,25 @@
 export type TUser = {
-    id?: string;
-    email: string;
-    userName: string;
-    firstName: string;
-    lastName?: string;
-    profilePicture?: string;
-    role: string;
-    phone?: string;
-    address?: string;
-    referralCode: string;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+  id?: string;
+  email: string;
+  userName: string;
+  firstName: string;
+  lastName?: string;
+  profilePicture?: string;
+  role: string;
+  phone?: string;
+  address?: string;
+  referralCode: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type TUserRegister = TUser & {
-    password?: string;
-    confirmPassword?: string;
+  password?: string;
+  confirmPassword?: string;
+};
+
+export type TJwtPayload = TUser & {
+  iat: number;
+  exp: number;
 };
