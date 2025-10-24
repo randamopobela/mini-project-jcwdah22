@@ -2,6 +2,7 @@
 import axios from "axios";
 // 🚀 DIUBAH: Impor BASE_API_URL dari config
 import { BASE_API_URL } from "../config/app.config";
+import { IEvent } from "@/types/event.type";
 
 interface IEventFilters {
   search?: string | null;
@@ -38,6 +39,18 @@ export const getAllCategories = async () => {
     return response.data.data; // Kembalikan array string kategori
   } catch (error) {
     console.error("Gagal mengambil kategori:", error);
+    throw error;
+  }
+};
+
+export const getPublicEventById = async (
+  id: string | number
+): Promise<IEvent> => {
+  try {
+    const response = await axios.get(`${BASE_API_URL}/events/${id}`);
+    return response.data.data; // Kembalikan objek event
+  } catch (error) {
+    console.error(`Gagal mengambil event dengan ID ${id}:`, error);
     throw error;
   }
 };
